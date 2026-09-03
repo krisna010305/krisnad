@@ -375,6 +375,107 @@
     text-align:center; margin-top:50px; font-size:12px; color:#8a7a63;
   }
 
+  /* ---------- user bar ---------- */
+  .user-bar{
+    position:relative; z-index:2;
+    max-width:760px; margin:0 auto; padding:14px 20px 0;
+    display:none; align-items:center; justify-content:flex-end; gap:16px;
+    font-size:13px; color:var(--ai); font-weight:700;
+  }
+  .user-bar .linklike{
+    background:none; border:none; color:var(--shu); font-weight:700;
+    cursor:pointer; font-size:13px; padding:4px 6px; font-family:"Noto Sans JP",sans-serif;
+  }
+  .user-bar .linklike:hover{ text-decoration:underline; }
+
+  /* ---------- login screen ---------- */
+  .login-card{
+    max-width:380px; margin:50px auto 0;
+    background:#fff; border:1px solid var(--paper-line);
+    border-radius:10px; padding:36px 28px; text-align:center;
+    box-shadow:0 12px 32px rgba(33,25,20,0.09);
+  }
+  .login-emblem{
+    width:64px; height:64px; margin:0 auto 16px; border-radius:50%;
+    background:var(--ai); color:var(--washi); display:flex; align-items:center; justify-content:center;
+    font-family:"Shippori Mincho", serif; font-size:26px; font-weight:700;
+    box-shadow:0 6px 0 var(--ai-deep);
+  }
+  .login-title{ font-family:"Shippori Mincho", serif; font-size:21px; margin:0 0 6px; }
+  .login-sub{ font-size:13px; color:#6b5c48; margin:0 0 24px; line-height:1.6; }
+  #login-form{ display:flex; flex-direction:column; gap:12px; }
+  #login-form input{
+    padding:12px 14px; border-radius:6px; border:1.5px solid var(--paper-line);
+    font-size:14.5px; font-family:"Noto Sans JP",sans-serif; background:var(--washi);
+  }
+  #login-form input:focus{ outline:none; border-color:var(--ai); background:#fff; }
+  .login-error{ color:var(--shu); font-size:13px; margin:14px 0 0; min-height:18px; }
+  .login-note{ font-size:11.5px; color:#a5947a; margin-top:18px; line-height:1.6; }
+
+  /* ---------- admin panel ---------- */
+  .admin-wrap{ max-width:640px; margin:0 auto; }
+  .admin-wrap h2{
+    font-family:"Shippori Mincho", serif; text-align:center; margin:0 0 24px; font-size:26px;
+  }
+  .admin-card{
+    background:#fff; border:1px solid var(--paper-line); border-radius:8px;
+    padding:22px; margin-bottom:20px; box-shadow:0 6px 18px rgba(33,25,20,0.05);
+  }
+  .admin-card h3{
+    font-family:"Shippori Mincho", serif; font-size:16px; margin:0 0 16px; color:var(--ai);
+  }
+  .admin-card form{ display:flex; gap:10px; flex-wrap:wrap; }
+  .admin-card form input{
+    flex:1; min-width:130px; padding:10px 12px; border-radius:6px;
+    border:1.5px solid var(--paper-line); font-size:14px; font-family:"Noto Sans JP",sans-serif;
+  }
+  .admin-card form input:focus{ outline:none; border-color:var(--ai); }
+  .admin-card .msg{ font-size:13px; margin:10px 0 0; min-height:16px; width:100%; }
+  .admin-card table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .admin-card th, .admin-card td{
+    padding:9px 6px; border-bottom:1px solid var(--paper-line); text-align:left; vertical-align:middle;
+  }
+  .admin-card th{ color:#8a7a63; font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;}
+  .pw-input{
+    width:100%; padding:7px 9px; border-radius:4px; border:1px solid var(--paper-line); font-size:13px;
+  }
+  .mini-btn{
+    border:none; background:var(--ai); color:var(--washi); padding:7px 11px;
+    border-radius:4px; font-size:12px; cursor:pointer; margin-right:4px; font-weight:700;
+  }
+  .mini-btn.del-btn{ background:var(--shu); }
+  .mini-btn:hover{ opacity:0.88; }
+
+  /* ---------- leaderboard ---------- */
+  .leaderboard-wrap{
+    margin-top:24px; background:#fff; border:1px solid var(--paper-line); border-radius:10px;
+    padding:20px; box-shadow:0 8px 24px rgba(33,25,20,0.06);
+  }
+  .leaderboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .leaderboard-title{font-family:"Shippori Mincho",serif;font-size:23px;font-weight:700;margin:0;color:var(--sumi);}
+  .leaderboard-sub{font-size:12px;color:#8a7a63;margin:3px 0 0;}
+  .leaderboard-live{font-size:11px;font-weight:700;color:var(--matcha);background:rgba(92,122,82,.12);padding:5px 9px;border-radius:12px;}
+  .leaderboard-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .leaderboard-table th,.leaderboard-table td{padding:10px 8px;border-bottom:1px solid var(--paper-line);text-align:left;}
+  .leaderboard-table th{font-size:11px;color:#8a7a63;text-transform:uppercase;letter-spacing:.04em;}
+  .leaderboard-table tr.me{background:rgba(201,161,90,.12);font-weight:800;}
+  .rank-badge{display:inline-flex;min-width:30px;height:30px;padding:0 7px;align-items:center;justify-content:center;border-radius:50%;background:var(--washi-deep);font-weight:900;}
+  .rank-badge.top1{background:var(--kin-bright);}
+  .rank-badge.top2{background:#d7d7d7;}
+  .rank-badge.top3{background:#d8a06a;}
+  .lb-empty{text-align:center;color:#8a7a63;padding:16px 8px;}
+  .my-rank-card{margin-top:12px;padding:12px 14px;background:rgba(31,58,95,.06);border-left:4px solid var(--ai);border-radius:5px;font-size:13px;}
+  .result-leaderboard{margin:28px auto 0;text-align:left;max-width:620px;}
+  .result-points-box{display:inline-flex;align-items:center;gap:8px;margin:8px 0 0;padding:9px 13px;border-radius:18px;background:rgba(201,161,90,.14);color:var(--sumi);font-weight:800;}
+  .wrong-review{margin:24px auto 0;max-width:620px;text-align:left;}
+  .wrong-review h3{font-family:"Shippori Mincho",serif;font-size:19px;margin:0 0 12px;}
+  .wrong-list{display:flex;flex-direction:column;gap:10px;}
+  .wrong-item{background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.18);border-radius:7px;padding:12px 14px;}
+  .wrong-item .q-head{font-weight:800;color:var(--shu-deep);font-size:12px;margin-bottom:4px;}
+  .wrong-item .q-text{font-size:13.5px;line-height:1.55;margin-bottom:5px;}
+  .wrong-item .q-answer{font-size:12.5px;color:#5a4c3d;}
+  .wrong-empty{font-size:13px;color:var(--matcha);background:rgba(92,122,82,.10);padding:12px 14px;border-radius:6px;}
+
   /* accessibility */
   button:focus-visible, .option:focus-visible, .session-card:focus-visible{
     outline:3px solid var(--kin); outline-offset:2px;
@@ -390,19 +491,57 @@
 <div class="seigaiha"></div>
 <div id="sakura-layer"></div>
 
+<div class="user-bar" id="user-bar">
+  <span id="user-bar-name"></span>
+  <button class="linklike" id="btn-open-admin" style="display:none;">Panel Admin</button>
+  <button class="linklike" id="btn-logout">Keluar</button>
+</div>
+
 <div class="container">
 
-  <header class="top">
+  <!-- SCREEN: LOGIN -->
+  <section id="screen-login" class="screen active">
+    <header class="top">
+      <span class="kanban">日本語 学習</span>
+      <h1 class="brand">寺子屋<span class="accent">クイズ</span></h1>
+      <p class="tagline">Bank Soal Bahasa Jepang — Latihan 4 Sesi, 248 Poin</p>
+    </header>
+    <div class="login-card">
+      <div class="login-emblem">入</div>
+      <p class="login-title">Masuk dulu, yuk</p>
+      <p class="login-sub">Gunakan username &amp; password yang diberikan gurumu untuk mulai berlatih.</p>
+      <form id="login-form">
+        <input type="text" id="login-username" placeholder="Username" autocomplete="username" required>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Masuk</button>
+      </form>
+      <p class="login-error" id="login-error"></p>
+      <p class="login-note" id="login-config-note"></p>
+    </div>
+  </section>
+
+  <header class="top" id="app-header" style="display:none;">
     <span class="kanban">日本語 学習</span>
     <h1 class="brand">寺子屋<span class="accent">クイズ</span></h1>
     <p class="tagline">Bank Soal Bahasa Jepang — Latihan 4 Sesi, 248 Poin</p>
   </header>
 
   <!-- SCREEN: HOME -->
-  <section id="screen-home" class="screen active">
+  <section id="screen-home" class="screen">
     <div class="session-grid" id="session-grid"></div>
     <div class="center-actions">
       <button class="btn btn-primary" id="btn-start-all">Mulai dari Sesi 1 →</button>
+    </div>
+    <div class="leaderboard-wrap">
+      <div class="leaderboard-head">
+        <div>
+          <h2 class="leaderboard-title">🏆 Leaderboard Murid</h2>
+          <p class="leaderboard-sub">Poin bertambah 1 setiap 4 sesi selesai (Sesi 1–4 = 1 poin).</p>
+        </div>
+        <span class="leaderboard-live" id="leaderboard-live-status">● LIVE</span>
+      </div>
+      <div id="leaderboard-table-wrap"><div class="lb-empty">Memuat ranking…</div></div>
+      <div class="my-rank-card" id="my-rank-card">Ranking kamu: memuat…</div>
     </div>
   </section>
 
@@ -427,10 +566,32 @@
         <div class="rstat b"><div class="n" id="stat-wrong">0</div><div class="l">Salah</div></div>
         <div class="rstat"><div class="n" id="stat-percent">0%</div><div class="l">Skor</div></div>
       </div>
+      <div id="result-points-box" class="result-points-box" style="display:none;"></div>
+      <div class="wrong-review">
+        <h3>Soal yang salah</h3>
+        <div id="wrong-review-list" class="wrong-list"></div>
+      </div>
+      <div id="result-leaderboard" class="result-leaderboard"></div>
       <div class="divider-brush"></div>
       <div class="center-actions" style="margin-top:0;">
         <button class="btn btn-ghost" id="btn-retry">Ulangi Sesi Ini</button>
         <button class="btn btn-primary" id="btn-next-session" style="margin-left:10px;">Lanjut →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: ADMIN -->
+  <section id="screen-admin" class="screen">
+    <div class="admin-wrap">
+      <h2>管理パネル ・ Panel Admin</h2>
+
+      <div class="admin-card">
+        <h3>Akun Murid</h3>
+        <p style="margin:0;color:#6b5c48;font-size:13px;line-height:1.7;">Username dan password murid dikelola melalui <strong>Vercel Environment Variables</strong> pada <code>MURID_DATA</code>. Setelah mengubah akun, lakukan redeploy agar deployment baru membaca konfigurasi tersebut.</p>
+      </div>
+
+      <div class="center-actions">
+        <button class="btn btn-ghost" id="btn-back-quiz">← Kembali ke Beranda Kuis</button>
       </div>
     </div>
   </section>
@@ -442,14 +603,87 @@
 <script>
 const SESSIONS = JSON.parse(document.getElementById('quiz-data-json').textContent);
 
+/* =====================================================================
+   VERCEL API CONFIG
+   - Rahasia tetap di server Environment Variables.
+   - Leaderboard di-refresh otomatis setiap 5 detik agar terlihat live.
+===================================================================== */
+const API_BASE = '';
+let authToken = sessionStorage.getItem('tcq_token') || '';
+let currentUser = null;
+let leaderboardTimer = null;
+
+async function api(path, options={}){
+  const headers = {'Content-Type':'application/json', ...(options.headers||{})};
+  if(authToken) headers.Authorization = `Bearer ${authToken}`;
+  const res = await fetch(API_BASE + path, {...options, headers});
+  let body = {};
+  try { body = await res.json(); } catch {}
+  if(!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+  return body;
+}
+function saveSession(){sessionStorage.setItem('tcq_user',JSON.stringify(currentUser));sessionStorage.setItem('tcq_token',authToken);}
+function loadSession(){const raw=sessionStorage.getItem('tcq_user');if(raw){try{currentUser=JSON.parse(raw);}catch{currentUser=null;}}}
+function clearSession(){sessionStorage.removeItem('tcq_user');sessionStorage.removeItem('tcq_token');authToken='';currentUser=null;}
+function updateUserBar(){
+  const bar=document.getElementById('user-bar'),nameEl=document.getElementById('user-bar-name'),adminBtn=document.getElementById('btn-open-admin'),appHeader=document.getElementById('app-header');
+  if(currentUser){bar.style.display='flex';nameEl.textContent=`👤 ${currentUser.username}`;adminBtn.style.display='none';appHeader.style.display='block';}
+  else{bar.style.display='none';appHeader.style.display='none';}
+}
+async function fetchLeaderboard(){
+  if(!currentUser)return {rows:[],me:null};
+  try{const result=await api('/api/leaderboard');document.getElementById('leaderboard-live-status').textContent='● LIVE';return result;}
+  catch(error){console.error('Leaderboard:',error);document.getElementById('leaderboard-live-status').textContent='⚠ Terputus';return {rows:[],me:null,error};}
+}
+function renderLeaderboard(rows,myRank){
+  const wrap=document.getElementById('leaderboard-table-wrap');
+  if(!rows.length) wrap.innerHTML='<div class="lb-empty">Belum ada murid yang menyelesaikan paket 4 sesi.</div>';
+  else wrap.innerHTML=`<table class="leaderboard-table"><thead><tr><th>#</th><th>Murid</th><th>Poin</th></tr></thead><tbody>${rows.slice(0,10).map((r,i)=>`<tr class="${String(r.user_id)===String(currentUser?.id)?'me':''}"><td><span class="rank-badge ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</span></td><td>${escapeHtml(r.username)}${String(r.user_id)===String(currentUser?.id)?' <small>(kamu)</small>':''}</td><td><strong>${r.points}</strong></td></tr>`).join('')}</tbody></table>`;
+  const meCard=document.getElementById('my-rank-card');
+  if(myRank){const meRow=rows[myRank-1];meCard.innerHTML=`Ranking kamu: <strong>#${myRank}</strong> dari <strong>${rows.length}</strong> murid · <strong>${meRow?.points||0} poin</strong>`;}
+  else meCard.innerHTML='Ranking kamu: <strong>Belum masuk</strong> — selesaikan 4 sesi untuk mendapatkan poin pertama.';
+}
+async function refreshLeaderboard(){const result=await fetchLeaderboard();renderLeaderboard(result.rows||[],result.me||null);return result;}
+function startLeaderboardLive(){
+  stopLeaderboardLive();
+  refreshLeaderboard();
+  leaderboardTimer=setInterval(()=>{if(currentUser)refreshLeaderboard();},5000);
+}
+function stopLeaderboardLive(){if(leaderboardTimer){clearInterval(leaderboardTimer);leaderboardTimer=null;}}
+async function recordCompletedPackage(packageState,packageResults){
+  if(!currentUser)return null;
+  try{const result=await api('/api/completions',{method:'POST',body:JSON.stringify({runId:packageState.runId,packageResults})});return {rows:result.rows||[],me:result.me||null,duplicate:!!result.duplicate};}
+  catch(error){console.error('Completion:',error);return null;}
+}
+
+document.getElementById('login-form').addEventListener('submit',async(e)=>{
+  e.preventDefault();const u=document.getElementById('login-username').value.trim(),p=document.getElementById('login-password').value,errEl=document.getElementById('login-error');errEl.textContent='';
+  try{const result=await api('/api/login',{method:'POST',body:JSON.stringify({username:u,password:p})});currentUser=result.user;authToken=result.token;saveSession();updateUserBar();startLeaderboardLive();showScreen('screen-home');}
+  catch(error){errEl.textContent=error.message||'Gagal masuk ke server.';}
+});
+document.getElementById('btn-logout').addEventListener('click',()=>{stopLeaderboardLive();clearSession();updateUserBar();document.getElementById('login-username').value='';document.getElementById('login-password').value='';showScreen('screen-login');});
+document.getElementById('btn-open-admin').style.display='none';
+document.getElementById('btn-back-quiz').addEventListener('click',()=>showScreen('screen-home'));
+
+loadSession();
+updateUserBar();
+if(currentUser && authToken){
+  api('/api/me').then(()=>{startLeaderboardLive();showScreen('screen-home');}).catch(()=>{stopLeaderboardLive();clearSession();updateUserBar();showScreen('screen-login');});
+} else {showScreen('screen-login');}
+
 let state = {
   sessionIndex: 0,
   qIndex: 0,
   answered: false,
-  perSession: [] // {correct, wrong, points}
+  runId: null,
+  perSession: [] // {correct, wrong, earned, wrongQuestions:[]}
 };
 
-SESSIONS.forEach(()=> state.perSession.push({correct:0, wrong:0, earned:0}));
+function resetPackage(){
+  state.runId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+'-'+Math.random());
+  state.perSession = SESSIONS.map(()=>({correct:0, wrong:0, earned:0, wrongQuestions:[]}));
+}
+resetPackage();
 
 // ---------- sakura petals ----------
 function spawnPetals(){
@@ -505,10 +739,34 @@ function showScreen(id){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function startSession(i){
+// ---------- boot ----------
+loadSession();
+updateUserBar();
+if(currentUser && authToken){
+  api('/api/me').then(()=>{
+    refreshLeaderboard();
+    subscribeLeaderboard();
+    showScreen('screen-home');
+  }).catch(()=>{
+    clearSession();
+    updateUserBar();
+    showScreen('screen-login');
+  });
+} else {
+  clearSession();
+  updateUserBar();
+  showScreen('screen-login');
+}
+
+function startSession(i, opts={}){
   state.sessionIndex = i;
   state.qIndex = 0;
-  state.perSession[i] = {correct:0, wrong:0, earned:0};
+  if(i===0 && !opts.continuePackage && state.perSession.some(st=>st.correct||st.wrong||st.earned||st.wrongQuestions.length)){
+    resetPackage();
+  }
+  if(opts.resetSession){
+    state.perSession[i] = {correct:0, wrong:0, earned:0, wrongQuestions:[]};
+  }
   showScreen('screen-quiz');
   renderQuestion();
 }
@@ -590,6 +848,7 @@ function goToNext(){
     renderQuestion();
   } else {
     document.getElementById('progress-fill').style.width = '100%';
+    state.perSession[state.sessionIndex].completed = true;
     showResult();
   }
 }
@@ -626,12 +885,16 @@ function selectAnswer(btn, q){
     const correctOpt = q.options.find(o=>o.l===q.correct);
     fb.innerHTML = `💮 <span>Kurang tepat. Jawaban benar: <strong>${q.correct}. ${escapeHtml(correctOpt.t)}</strong></span>`;
     st.wrong += 1;
+    st.wrongQuestions.push({
+      num:q.num, prompt:q.prompt, chosen:btn.querySelector('.opt-text')?.textContent || chosen,
+      answer:`${q.correct}. ${correctOpt?.t || q.correct}`
+    });
   }
   document.getElementById('quiz-score-live').textContent = `${st.earned} poin`;
   scheduleAutoAdvance();
 }
 
-function showResult(){
+async function showResult(){
   const s = currentSession();
   const st = state.perSession[state.sessionIndex];
   const totalPts = s.questions.reduce((a,q)=>a+q.points,0);
@@ -644,6 +907,39 @@ function showResult(){
   document.getElementById('stat-wrong').textContent = st.wrong;
   document.getElementById('stat-percent').textContent = pct+'%';
 
+  const wrongList = document.getElementById('wrong-review-list');
+  wrongList.innerHTML = st.wrongQuestions.length ? st.wrongQuestions.map(q=>`
+    <div class="wrong-item">
+      <div class="q-head">Soal ${escapeHtml(q.num)}</div>
+      <div class="q-text">${escapeHtml(q.prompt)}</div>
+      <div class="q-answer">Jawaban kamu: <strong>${escapeHtml(q.chosen)}</strong><br>Jawaban benar: <strong>${escapeHtml(q.answer)}</strong></div>
+    </div>`).join('') : '<div class="wrong-empty">🎉 Tidak ada soal yang salah pada sesi ini.</div>';
+
+  const allFourComplete = SESSIONS.length === 4 && state.perSession.every(x=>x.completed);
+  const pointsBox = document.getElementById('result-points-box');
+  const resultLb = document.getElementById('result-leaderboard');
+  pointsBox.style.display='none';
+  resultLb.innerHTML='';
+
+  if(allFourComplete){
+    pointsBox.style.display='inline-flex';
+    const lb = await recordCompletedPackage({runId:state.runId}, state.perSession);
+    pointsBox.textContent = lb?.duplicate ? '⛩ Paket ini sudah tercatat · poin tidak digandakan' : '⛩ Paket 4 sesi selesai · +1 poin leaderboard';
+    if(lb){
+      resultLb.innerHTML = `<div class="leaderboard-wrap">
+        <div class="leaderboard-head"><div><h2 class="leaderboard-title" style="font-size:20px;">🏆 Ranking terbaru</h2><p class="leaderboard-sub">Posisi kamu setelah poin baru masuk.</p></div><span class="leaderboard-live">● LIVE</span></div>
+        <div id="result-lb-content"></div>
+      </div>`;
+      const content = resultLb.querySelector('#result-lb-content');
+      const myRank = lb.me;
+      const rows = lb.rows || [];
+      content.innerHTML = `<table class="leaderboard-table"><thead><tr><th>#</th><th>Murid</th><th>Poin</th></tr></thead><tbody>${rows.slice(0,10).map((r,i)=>`<tr class="${r.user_id===currentUser?.id?'me':''}"><td><span class="rank-badge ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</span></td><td>${escapeHtml(r.username)}${r.user_id===currentUser?.id?' <small>(kamu)</small>':''}</td><td><strong>${r.points}</strong></td></tr>`).join('')}</tbody></table>${myRank?`<div class="my-rank-card">Kamu sekarang <strong>#${myRank}</strong> dari <strong>${rows.length}</strong> murid.</div>`:''}`;
+    }
+  } else {
+    pointsBox.style.display='inline-flex';
+    pointsBox.textContent=`⏳ Progres paket: ${state.perSession.filter(x=>x.completed).length}/4 sesi selesai · belum mendapat poin`;
+  }
+
   const nextBtn = document.getElementById('btn-next-session');
   if(state.sessionIndex < SESSIONS.length - 1){
     nextBtn.textContent = `Lanjut ke ${SESSIONS[state.sessionIndex+1].title} →`;
@@ -652,12 +948,13 @@ function showResult(){
     nextBtn.textContent = 'Kembali ke Beranda';
   }
   showScreen('screen-result');
+  refreshLeaderboard();
 }
 
-document.getElementById('btn-retry').addEventListener('click', ()=> startSession(state.sessionIndex));
+document.getElementById('btn-retry').addEventListener('click', ()=> startSession(state.sessionIndex, {resetSession:true, continuePackage:true}));
 document.getElementById('btn-next-session').addEventListener('click', ()=>{
   if(state.sessionIndex < SESSIONS.length - 1){
-    startSession(state.sessionIndex + 1);
+    startSession(state.sessionIndex + 1, {continuePackage:true});
   } else {
     showScreen('screen-home');
   }
