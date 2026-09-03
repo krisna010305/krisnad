@@ -484,6 +484,22 @@
     .petal, .screen.active, .feedback.show, .reveal-answer.show{ animation:none !important; }
   }
 </style>
+
+<script>
+const USERNAME = "nadila";
+const PASSWORD = "krisnad";
+(function(){
+ if(sessionStorage.getItem('auth_ok')==='1') return;
+ const u = prompt('Username:');
+ const p = prompt('Password:');
+ if(u===USERNAME && p===PASSWORD){
+   sessionStorage.setItem('auth_ok','1');
+ }else{
+   document.body.innerHTML='<h2 style="font-family:Arial;text-align:center;margin-top:60px">Akses ditolak</h2>';
+ }
+})();
+</script>
+
 </head>
 <body>
 
@@ -500,85 +516,10 @@
 <div class="container">
 
   <!-- SCREEN: LOGIN -->
-  <section id="screen-login" class="screen active">
-    <header class="top">
-      <span class="kanban">日本語 学習</span>
-      <h1 class="brand">寺子屋<span class="accent">クイズ</span></h1>
-      <p class="tagline">Bank Soal Bahasa Jepang — Latihan 4 Sesi, 248 Poin</p>
-    </header>
-    <div class="login-card">
-      <div class="login-emblem">入</div>
-      <p class="login-title">Masuk dulu, yuk</p>
-      <p class="login-sub">Gunakan username &amp; password yang diberikan gurumu untuk mulai berlatih.</p>
-      <form id="login-form">
-        <input type="text" id="login-username" placeholder="Username" autocomplete="username" required>
-        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
-        <button type="submit" class="btn btn-primary" style="width:100%;">Masuk</button>
-      </form>
-      <p class="login-error" id="login-error"></p>
-      <p class="login-note" id="login-config-note"></p>
-    </div>
-  </section>
-
-  <header class="top" id="app-header" style="display:none;">
-    <span class="kanban">日本語 学習</span>
-    <h1 class="brand">寺子屋<span class="accent">クイズ</span></h1>
-    <p class="tagline">Bank Soal Bahasa Jepang — Latihan 4 Sesi, 248 Poin</p>
-  </header>
-
-  <!-- SCREEN: HOME -->
-  <section id="screen-home" class="screen">
-    <div class="session-grid" id="session-grid"></div>
-    <div class="center-actions">
-      <button class="btn btn-primary" id="btn-start-all">Mulai dari Sesi 1 →</button>
-    </div>
-    <div class="leaderboard-wrap">
-      <div class="leaderboard-head">
-        <div>
-          <h2 class="leaderboard-title">🏆 Leaderboard Murid</h2>
-          <p class="leaderboard-sub">Poin bertambah 1 setiap 4 sesi selesai (Sesi 1–4 = 1 poin).</p>
-        </div>
-        <span class="leaderboard-live" id="leaderboard-live-status">● LIVE</span>
-      </div>
-      <div id="leaderboard-table-wrap"><div class="lb-empty">Memuat ranking…</div></div>
-      <div class="my-rank-card" id="my-rank-card">Ranking kamu: memuat…</div>
-    </div>
-  </section>
+  
 
   <!-- SCREEN: QUIZ -->
-  <section id="screen-quiz" class="screen">
-    <div class="quiz-topbar">
-      <span class="session-tag" id="quiz-session-title"></span>
-      <span class="score-live" id="quiz-score-live"></span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="qcard" id="qcard"></div>
-  </section>
-
-  <!-- SCREEN: SESSION RESULT -->
-  <section id="screen-result" class="screen">
-    <div class="result-wrap">
-      <div class="result-emblem">合格</div>
-      <p class="result-score" id="result-score">0<span> / 0 poin</span></p>
-      <p class="result-label" id="result-session-name"></p>
-      <div class="result-stats">
-        <div class="rstat g"><div class="n" id="stat-correct">0</div><div class="l">Benar</div></div>
-        <div class="rstat b"><div class="n" id="stat-wrong">0</div><div class="l">Salah</div></div>
-        <div class="rstat"><div class="n" id="stat-percent">0%</div><div class="l">Skor</div></div>
-      </div>
-      <div id="result-points-box" class="result-points-box" style="display:none;"></div>
-      <div class="wrong-review">
-        <h3>Soal yang salah</h3>
-        <div id="wrong-review-list" class="wrong-list"></div>
-      </div>
-      <div id="result-leaderboard" class="result-leaderboard"></div>
-      <div class="divider-brush"></div>
-      <div class="center-actions" style="margin-top:0;">
-        <button class="btn btn-ghost" id="btn-retry">Ulangi Sesi Ini</button>
-        <button class="btn btn-primary" id="btn-next-session" style="margin-left:10px;">Lanjut →</button>
-      </div>
-    </div>
-  </section>
+  
 
   <!-- SCREEN: ADMIN -->
   <section id="screen-admin" class="screen">
@@ -926,8 +867,7 @@ async function showResult(){
     const lb = await recordCompletedPackage({runId:state.runId}, state.perSession);
     pointsBox.textContent = lb?.duplicate ? '⛩ Paket ini sudah tercatat · poin tidak digandakan' : '⛩ Paket 4 sesi selesai · +1 poin leaderboard';
     if(lb){
-      resultLb.innerHTML = `<div class="leaderboard-wrap">
-        <div class="leaderboard-head"><div><h2 class="leaderboard-title" style="font-size:20px;">🏆 Ranking terbaru</h2><p class="leaderboard-sub">Posisi kamu setelah poin baru masuk.</p></div><span class="leaderboard-live">● LIVE</span></div>
+      resultLb.innerHTML = `<span class="leaderboard-live">● LIVE</span></div>
         <div id="result-lb-content"></div>
       </div>`;
       const content = resultLb.querySelector('#result-lb-content');
