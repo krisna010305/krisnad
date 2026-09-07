@@ -534,6 +534,38 @@
   /* ---------- admin simple ---------- */
   .admin-card p.info{ font-size:13px; color:#6b5c48; margin:0 0 12px; }
 
+
+  /* ---------- quiz UX enhancements ---------- */
+  .quiz-progress-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 10px;font-size:12.5px;color:#6b5c48}
+  .quiz-progress-meta strong{color:var(--ai)}
+  .question-jump{margin:18px 0 6px;padding:14px;background:rgba(255,255,255,.72);border:1px solid var(--paper-line);border-radius:8px}
+  .question-jump-title{font-size:12px;font-weight:700;color:#6b5c48;margin-bottom:10px;text-align:center}
+  .question-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+  .question-grid button{border:1px solid var(--paper-line);background:#fff;padding:7px 4px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;color:var(--sumi);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+  .question-grid button:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(33,25,20,.12)}
+  .question-grid button.current{background:var(--ai);color:#fff;border-color:var(--ai)}
+  .question-grid button.answered{background:rgba(92,122,82,.16);color:#3d5636;border-color:rgba(92,122,82,.35)}
+  .question-grid button.current.answered{background:var(--ai);color:#fff}
+  .question-grid button.unanswered{background:#fff}
+  .question-grid button.wrong-mark{background:rgba(170,65,65,.12);color:var(--shu-deep);border-color:rgba(170,65,65,.3)}
+  .question-grid button.current.wrong-mark{background:var(--shu);color:#fff}
+  .question-grid button:focus-visible{outline:3px solid var(--kin);outline-offset:2px}
+  .quiz-card-animate{animation:quizCardIn .28s ease both}
+  @keyframes quizCardIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+  .feedback.good{animation:answerGood .35s ease both}
+  .feedback.bad{animation:answerBad .4s ease both}
+  @keyframes answerGood{0%{opacity:0;transform:scale(.94)}70%{transform:scale(1.03)}100%{opacity:1;transform:scale(1)}}
+  @keyframes answerBad{0%{opacity:0;transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}100%{opacity:1;transform:translateX(0)}}
+  .option.correct{animation:optionCorrect .35s ease both}
+  .option.wrong{animation:optionWrong .4s ease both}
+  @keyframes optionCorrect{from{transform:scale(.97)}60%{transform:scale(1.025)}to{transform:scale(1)}}
+  @keyframes optionWrong{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+  .result-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+  .result-detail{background:#fff;border:1px solid var(--paper-line);border-radius:7px;padding:10px 6px;text-align:center}
+  .result-detail .n{font-size:20px;font-weight:800;color:var(--ai)}
+  .result-detail .l{font-size:11px;color:#7b6b58;margin-top:3px}
+  @media(max-width:560px){.result-detail-grid{grid-template-columns:repeat(2,1fr)}.question-grid{grid-template-columns:repeat(6,1fr)}}
+  @media(prefers-reduced-motion:reduce){.quiz-card-animate,.feedback.good,.feedback.bad,.option.correct,.option.wrong{animation:none!important}}
 </style>
 </head>
 <body>
@@ -928,6 +960,24 @@ function spawnPetals(){
 }
 spawnPetals();
 
+function renderQuestionPalette(){
+  const total = state.questionOrder.length;
+  let html = `<div class="question-jump"><div class="question-jump-title">Nomor soal — klik untuk langsung menuju soal</div><div class="question-grid">`;
+  for(let i=0;i<total;i++){
+    const ref = state.questionOrder[i];
+    const key = `${ref.sessionIndex}:${ref.qIndex}`;
+    const ans = state.answers[key];
+    let cls = i === state.qIndex ? 'current' : '';
+    if(ans){
+      cls += ans.correct === false ? ' wrong-mark' : ' answered';
+    } else {
+      cls += ' unanswered';
+    }
+    html += `<button type="button" class="${cls.trim()}" data-jump-index="${i}" title="Soal ${i+1}">${i+1}</button>`;
+  }
+  return html + `</div></div>`;
+}
+
 function renderQuestion(){
   const savedAnswer = state.answers[questionKey()];
   state.answered = !!savedAnswer;
@@ -941,10 +991,14 @@ function renderQuestion(){
   updateLiveScore();
 
   const prog = overallProgress();
-  const pct = prog.totalCount ? (prog.doneCount/prog.totalCount*100) : 0;
+  const answeredCount = Object.keys(state.answers).length;
+  const pct = prog.totalCount ? ((state.qIndex+1)/prog.totalCount*100) : 0;
   document.getElementById('progress-fill').style.width = pct+'%';
 
   const card = document.getElementById('qcard');
+  card.classList.remove('quiz-card-animate');
+  void card.offsetWidth;
+  card.classList.add('quiz-card-animate');
   let html = `
     <span class="qnum">問${q.num} <span class="qpoints">${q.points} poin</span></span>
     <p class="qprompt">${escapeHtml(q.prompt)}</p>
@@ -985,11 +1039,23 @@ function renderQuestion(){
     <button type="button" class="btn" id="btn-prev-question">${isFirstQuestion ? '← Kembali ke Beranda' : '← Soal Sebelumnya'}</button>
     <button type="button" class="btn btn-primary" id="btn-next-question" ${savedAnswer ? '' : 'disabled'}>${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
   </div>`;
+  html += `<div class="quiz-progress-meta"><span>📖 <strong>Soal ${state.qIndex+1} / ${state.questionOrder.length}</strong></span><span>✓ Terjawab: <strong>${answeredCount}</strong> / ${state.questionOrder.length}</span></div>`;
+  html += renderQuestionPalette();
   card.innerHTML = html;
   const prevBtn = document.getElementById('btn-prev-question');
   const nextBtn = document.getElementById('btn-next-question');
   if(prevBtn) prevBtn.addEventListener('click', function(e){ e.preventDefault(); goToPrevious(); });
   if(nextBtn) nextBtn.addEventListener('click', function(e){ e.preventDefault(); goToNext(); });
+  document.querySelectorAll('[data-jump-index]').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      const target = Number(this.getAttribute('data-jump-index'));
+      if(Number.isInteger(target) && target >= 0 && target < state.questionOrder.length){
+        state.qIndex = target;
+        renderQuestion();
+      }
+    });
+  });
 
   if(q.single){
     if(savedAnswer){
@@ -1088,6 +1154,11 @@ function goToNext(){
     renderQuestion();
     return;
   }
+  const unanswered = state.questionOrder.length - Object.keys(state.answers).length;
+  if(unanswered > 0){
+    const ok = window.confirm(`Masih ada ${unanswered} soal yang belum dijawab.\n\nApakah kamu yakin ingin menyelesaikan kuis sekarang?`);
+    if(!ok) return;
+  }
   document.getElementById('progress-fill').style.width = '100%';
   finishTitle();
 }
@@ -1102,7 +1173,8 @@ function finishTitle(){
     earned += p.earned;
     wrongItems = wrongItems.concat(p.wrongItems);
   });
-  completedTitles[state.titleKey] = { earned, total: totals.totalPts, correct, wrong, wrongItems };
+  const answered = Object.keys(state.answers).length;
+  completedTitles[state.titleKey] = { earned, total: totals.totalPts, correct, wrong, answered, wrongItems };
   saveCompleted();
   renderResult();
   showScreen('screen-result');
@@ -1121,6 +1193,7 @@ function renderResult(){
   const data = completedTitles[state.titleKey];
   const totalQ = currentSessions().reduce((a,s)=>a+s.questions.length,0);
   const pct = data.total > 0 ? Math.round((data.earned/data.total)*100) : 0;
+  const unanswered = Math.max(0, totalQ - (data.answered ?? (data.correct + data.wrong)));
 
   let wrongHtml;
   if(data.wrongItems.length){
@@ -1153,6 +1226,12 @@ function renderResult(){
       <div class="rstat g"><div class="n">${data.correct}</div><div class="l">Benar</div></div>
       <div class="rstat b"><div class="n">${data.wrong}</div><div class="l">Salah</div></div>
       <div class="rstat"><div class="n">${pct}%</div><div class="l">Skor</div></div>
+    </div>
+    <div class="result-detail-grid">
+      <div class="result-detail"><div class="n">${data.answered ?? (data.correct + data.wrong)}</div><div class="l">Terjawab</div></div>
+      <div class="result-detail"><div class="n">${unanswered}</div><div class="l">Belum dijawab</div></div>
+      <div class="result-detail"><div class="n">${totalQ}</div><div class="l">Total soal</div></div>
+      <div class="result-detail"><div class="n">${data.earned}/${data.total}</div><div class="l">Poin</div></div>
     </div>
     <div class="divider-brush"></div>
     ${wrongHtml}
