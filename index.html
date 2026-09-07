@@ -850,19 +850,41 @@ let state = {
   answered: false,
   perSession: [],
   answers: {},
-  optionOrders: {}
+  optionOrders: {},
+  questionOrder: []
 };
 
 function currentTitle(){ return TITLES[state.titleKey]; }
 function currentSessions(){ return currentTitle().sessions; }
 function currentSession(){ return currentSessions()[state.sessionIndex]; }
-function currentQuestion(){ return currentSession().questions[state.qIndex]; }
-function questionKey(){ return `${state.sessionIndex}:${state.qIndex}`; }
+function buildQuestionOrder(){
+  const order = [];
+  currentSessions().forEach((session, sessionIndex)=>{
+    session.questions.forEach((_, qIndex)=> order.push({sessionIndex, qIndex}));
+  });
+  for(let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+function currentQuestionRef(){ return state.questionOrder[state.qIndex]; }
+function currentQuestion(){
+  const ref = currentQuestionRef();
+  return currentSessions()[ref.sessionIndex].questions[ref.qIndex];
+}
+function questionKey(){
+  const ref = currentQuestionRef();
+  return `${ref.sessionIndex}:${ref.qIndex}`;
+}
+function currentQuestionSessionIndex(){ return currentQuestionRef().sessionIndex; }
+
 
 function startTitle(titleKey){
   state.titleKey = titleKey;
   state.sessionIndex = 0;
   state.qIndex = 0;
+  state.questionOrder = buildQuestionOrder();
   state.perSession = currentSessions().map(()=>({correct:0, wrong:0, earned:0, wrongItems:[]}));
   state.answers = {};
   state.optionOrders = {};
@@ -871,14 +893,10 @@ function startTitle(titleKey){
 }
 
 function overallProgress(){
-  const sessions = currentSessions();
-  let doneCount = 0, totalCount = 0;
-  sessions.forEach((s,i)=>{
-    totalCount += s.questions.length;
-    if(i < state.sessionIndex) doneCount += s.questions.length;
-    else if(i === state.sessionIndex) doneCount += state.qIndex;
-  });
-  return { doneCount, totalCount };
+  return {
+    doneCount: state.qIndex,
+    totalCount: state.questionOrder.length
+  };
 }
 
 function updateLiveScore(){
@@ -914,11 +932,12 @@ function renderQuestion(){
   const savedAnswer = state.answers[questionKey()];
   state.answered = !!savedAnswer;
   const t = currentTitle();
-  const s = currentSession();
+  const ref = currentQuestionRef();
+  const s = currentSessions()[ref.sessionIndex];
   const q = currentQuestion();
 
-  document.getElementById('quiz-session-title').textContent = `${t.label} — ${s.title} — Soal ${state.qIndex+1}/${s.questions.length}`;
-  document.getElementById('quiz-session-sub').textContent = `Sesi ${state.sessionIndex+1} dari ${currentSessions().length}`;
+  document.getElementById('quiz-session-title').textContent = `${t.label} — Soal ${state.qIndex+1}/${state.questionOrder.length}`;
+  document.getElementById('quiz-session-sub').textContent = `${s.title} • Sesi asal ${ref.sessionIndex+1}`;
   updateLiveScore();
 
   const prog = overallProgress();
@@ -959,8 +978,8 @@ function renderQuestion(){
     });
     html += `</div><div class="feedback" id="feedback"></div>`;
   }
-  const isLastQuestion = state.sessionIndex === currentSessions().length - 1 && state.qIndex === s.questions.length - 1;
-  const isFirstQuestion = state.sessionIndex === 0 && state.qIndex === 0;
+  const isLastQuestion = state.qIndex === state.questionOrder.length - 1;
+  const isFirstQuestion = state.qIndex === 0;
   const navVisible = true;
   html += `<div class="center-actions" id="question-nav" style="display:block; gap:10px; flex-wrap:wrap;">
     <button type="button" class="btn" id="btn-prev-question">${isFirstQuestion ? '← Kembali ke Beranda' : '← Soal Sebelumnya'}</button>
@@ -983,7 +1002,7 @@ function renderQuestion(){
       if(!state.answered){
         state.answered = true;
         state.answers[questionKey()] = { single: true, correct: true };
-        const st = state.perSession[state.sessionIndex];
+        const st = state.perSession[currentQuestionSessionIndex()];
         st.correct += 1;
         st.earned += q.points;
         updateLiveScore();
@@ -1003,7 +1022,7 @@ function selectAnswer(btn, q){
   const chosen = btn.getAttribute('data-label');
   const hasKey = !!q.correct;
   const isCorrect = hasKey && chosen === q.correct;
-  const st = state.perSession[state.sessionIndex];
+  const st = state.perSession[currentQuestionSessionIndex()];
   state.answers[questionKey()] = { chosen, correct: isCorrect };
 
   document.querySelectorAll('#options-wrap .option').forEach(o=>{
@@ -1029,7 +1048,7 @@ function selectAnswer(btn, q){
     st.wrong += 1;
     const chosenOpt = q.options.find(o=>o.l===chosen);
     st.wrongItems.push({
-      sessionTitle: currentSession().title,
+      sessionTitle: currentSessions()[currentQuestionSessionIndex()].title,
       num: q.num,
       prompt: q.prompt,
       chosen: chosen || '-',
@@ -1055,28 +1074,17 @@ function showNextQuestionButton(){
 function goToPrevious(){
   if(state.qIndex > 0){
     state.qIndex -= 1;
-  } else if(state.sessionIndex > 0){
-    state.sessionIndex -= 1;
-    state.qIndex = currentSession().questions.length - 1;
-  } else {
-    // Soal pertama: kembali ke beranda tanpa mengubah jawaban/skor.
-    showScreen('screen-home');
-    renderHome();
-    return;
-  }
-  renderQuestion();
-}
-
-function goToNext(){
-  const s = currentSession();
-  if(state.qIndex < s.questions.length - 1){
-    state.qIndex += 1;
     renderQuestion();
     return;
   }
-  if(state.sessionIndex < currentSessions().length - 1){
-    state.sessionIndex += 1;
-    state.qIndex = 0;
+  // Soal pertama: kembali ke beranda tanpa mengubah jawaban/skor.
+  showScreen('screen-home');
+  renderHome();
+}
+
+function goToNext(){
+  if(state.qIndex < state.questionOrder.length - 1){
+    state.qIndex += 1;
     renderQuestion();
     return;
   }
