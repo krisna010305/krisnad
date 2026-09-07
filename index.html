@@ -964,7 +964,7 @@ function renderQuestion(){
   const navVisible = true;
   html += `<div class="center-actions" id="question-nav" style="display:block; gap:10px; flex-wrap:wrap;">
     <button type="button" class="btn" id="btn-prev-question">${isFirstQuestion ? '← Kembali ke Beranda' : '← Soal Sebelumnya'}</button>
-    <button type="button" class="btn btn-primary" id="btn-next-question" style="display:${savedAnswer ? 'inline-block' : 'none'};">${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
+    <button type="button" class="btn btn-primary" id="btn-next-question" ${savedAnswer ? '' : 'disabled'}>${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
   </div>`;
   card.innerHTML = html;
   const prevBtn = document.getElementById('btn-prev-question');
@@ -1047,6 +1047,7 @@ function showNextQuestionButton(){
   const btn = document.getElementById('btn-next-question');
   if(!nav || !btn) return;
   nav.style.display = 'block';
+  btn.disabled = false;
   // Event listener tombol dipasang saat renderQuestion().
   // Jangan pasang ulang di sini agar tidak terjadi handler ganda saat bolak-balik soal.
 }
@@ -1059,7 +1060,8 @@ function goToPrevious(){
     state.qIndex = currentSession().questions.length - 1;
   } else {
     // Soal pertama: kembali ke beranda tanpa mengubah jawaban/skor.
-    showScreen('home');
+    showScreen('screen-home');
+    renderHome();
     return;
   }
   renderQuestion();
