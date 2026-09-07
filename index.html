@@ -957,7 +957,9 @@ function renderQuestion(){
   </div>`;
   card.innerHTML = html;
   const prevBtn = document.getElementById('btn-prev-question');
-  if(prevBtn) prevBtn.onclick = goToPrevious;
+  const nextBtn = document.getElementById('btn-next-question');
+  if(prevBtn) prevBtn.addEventListener('click', function(e){ e.preventDefault(); goToPrevious(); });
+  if(nextBtn) nextBtn.addEventListener('click', function(e){ e.preventDefault(); goToNext(); });
 
   if(q.single){
     if(savedAnswer){
@@ -1034,9 +1036,8 @@ function showNextQuestionButton(){
   const btn = document.getElementById('btn-next-question');
   if(!nav || !btn) return;
   nav.style.display = 'block';
-  btn.onclick = goToNext;
-  const prev = document.getElementById('btn-prev-question');
-  if(prev) prev.onclick = goToPrevious;
+  // Event listener tombol dipasang saat renderQuestion().
+  // Jangan pasang ulang di sini agar tidak terjadi handler ganda saat bolak-balik soal.
 }
 
 function goToPrevious(){
