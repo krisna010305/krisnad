@@ -848,19 +848,22 @@ let state = {
   sessionIndex: 0,
   qIndex: 0,
   answered: false,
-  perSession: []
+  perSession: [],
+  answers: {}
 };
 
 function currentTitle(){ return TITLES[state.titleKey]; }
 function currentSessions(){ return currentTitle().sessions; }
 function currentSession(){ return currentSessions()[state.sessionIndex]; }
 function currentQuestion(){ return currentSession().questions[state.qIndex]; }
+function questionKey(){ return `${state.sessionIndex}:${state.qIndex}`; }
 
 function startTitle(titleKey){
   state.titleKey = titleKey;
   state.sessionIndex = 0;
   state.qIndex = 0;
   state.perSession = currentSessions().map(()=>({correct:0, wrong:0, earned:0, wrongItems:[]}));
+  state.answers = {};
   showScreen('screen-quiz');
   renderQuestion();
 }
@@ -906,7 +909,8 @@ function spawnPetals(){
 spawnPetals();
 
 function renderQuestion(){
-  state.answered = false;
+  const savedAnswer = state.answers[questionKey()];
+  state.answered = !!savedAnswer;
   const t = currentTitle();
   const s = currentSession();
   const q = currentQuestion();
@@ -934,7 +938,9 @@ function renderQuestion(){
   } else {
     html += `<div class="options" id="options-wrap">`;
     q.options.forEach(opt=>{
-      html += `<button type="button" class="option" data-label="${opt.l}">
+      const selected = savedAnswer && savedAnswer.chosen === opt.l;
+      const cls = selected ? (q.correct && opt.l === q.correct ? 'option locked correct' : 'option locked wrong') : 'option';
+      html += `<button type="button" class="${cls}" data-label="${opt.l}">
         <span class="badge">${opt.l}</span>
         <span class="opt-text">${escapeHtml(opt.t)}</span>
         ${opt.img ? `<span class="opt-img"><img src="${opt.img}" alt="Opsi ${opt.l}"></span>` : ''}
@@ -943,17 +949,27 @@ function renderQuestion(){
     html += `</div><div class="feedback" id="feedback"></div>`;
   }
   const isLastQuestion = state.sessionIndex === currentSessions().length - 1 && state.qIndex === s.questions.length - 1;
-  html += `<div class="center-actions" id="question-nav" style="display:none;">
+  const hasPrevious = !(state.sessionIndex === 0 && state.qIndex === 0);
+  const navVisible = !!savedAnswer;
+  html += `<div class="center-actions" id="question-nav" style="display:${navVisible ? 'block' : 'none'}; gap:10px; flex-wrap:wrap;">
+    ${hasPrevious ? '<button type="button" class="btn" id="btn-prev-question">← Soal Sebelumnya</button>' : ''}
     <button type="button" class="btn btn-primary" id="btn-next-question">${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
   </div>`;
   card.innerHTML = html;
+  const prevBtn = document.getElementById('btn-prev-question');
+  if(prevBtn) prevBtn.onclick = goToPrevious;
 
   if(q.single){
+    if(savedAnswer){
+      document.getElementById('reveal-answer').classList.add('show');
+      document.getElementById('reveal-btn').style.display = 'none';
+    }
     document.getElementById('reveal-btn').addEventListener('click', function(){
       document.getElementById('reveal-answer').classList.add('show');
       this.style.display = 'none';
       if(!state.answered){
         state.answered = true;
+        state.answers[questionKey()] = { single: true, correct: true };
         const st = state.perSession[state.sessionIndex];
         st.correct += 1;
         st.earned += q.points;
@@ -975,6 +991,7 @@ function selectAnswer(btn, q){
   const hasKey = !!q.correct;
   const isCorrect = hasKey && chosen === q.correct;
   const st = state.perSession[state.sessionIndex];
+  state.answers[questionKey()] = { chosen, correct: isCorrect };
 
   document.querySelectorAll('#options-wrap .option').forEach(o=>{
     o.classList.add('locked');
@@ -1018,6 +1035,20 @@ function showNextQuestionButton(){
   if(!nav || !btn) return;
   nav.style.display = 'block';
   btn.onclick = goToNext;
+  const prev = document.getElementById('btn-prev-question');
+  if(prev) prev.onclick = goToPrevious;
+}
+
+function goToPrevious(){
+  if(state.qIndex > 0){
+    state.qIndex -= 1;
+  } else if(state.sessionIndex > 0){
+    state.sessionIndex -= 1;
+    state.qIndex = currentSession().questions.length - 1;
+  } else {
+    return;
+  }
+  renderQuestion();
 }
 
 function goToNext(){
