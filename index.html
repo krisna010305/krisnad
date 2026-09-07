@@ -221,6 +221,12 @@
     width:0%; transition:width .4s ease;
   }
 
+  .image-wait{
+    text-align:center; padding:10px 12px; margin-bottom:10px;
+    font-size:13px; color:#6b5c48; background:var(--washi-deep);
+    border:1px dashed var(--paper-line); border-radius:5px;
+  }
+
   .qcard{
     background:#fff;
     border:1px solid var(--paper-line);
@@ -919,7 +925,7 @@ function renderQuestion(){
     <p class="qprompt">${escapeHtml(q.prompt)}</p>
   `;
   if(q.image){
-    html += `<div class="qimage-wrap"><img src="${q.image}" alt="Ilustrasi soal ${q.num}"></div>`;
+    html += `<div class="qimage-wrap"><div class="image-wait">🖼️ Tunggu gambar muncul...</div><img src="${q.image}" alt="Ilustrasi soal ${q.num}" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'; this.previousElementSibling.textContent='⚠️ Gambar belum muncul — periksa koneksi'"></div>`;
   }
 
   if(q.single){
