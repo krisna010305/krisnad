@@ -960,11 +960,11 @@ function renderQuestion(){
     html += `</div><div class="feedback" id="feedback"></div>`;
   }
   const isLastQuestion = state.sessionIndex === currentSessions().length - 1 && state.qIndex === s.questions.length - 1;
-  const hasPrevious = !(state.sessionIndex === 0 && state.qIndex === 0);
-  const navVisible = !!savedAnswer;
-  html += `<div class="center-actions" id="question-nav" style="display:${navVisible ? 'block' : 'none'}; gap:10px; flex-wrap:wrap;">
-    ${hasPrevious ? '<button type="button" class="btn" id="btn-prev-question">← Soal Sebelumnya</button>' : ''}
-    <button type="button" class="btn btn-primary" id="btn-next-question">${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
+  const isFirstQuestion = state.sessionIndex === 0 && state.qIndex === 0;
+  const navVisible = true;
+  html += `<div class="center-actions" id="question-nav" style="display:block; gap:10px; flex-wrap:wrap;">
+    <button type="button" class="btn" id="btn-prev-question">${isFirstQuestion ? '← Kembali ke Beranda' : '← Soal Sebelumnya'}</button>
+    <button type="button" class="btn btn-primary" id="btn-next-question" style="display:${savedAnswer ? 'inline-block' : 'none'};">${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
   </div>`;
   card.innerHTML = html;
   const prevBtn = document.getElementById('btn-prev-question');
@@ -1058,6 +1058,8 @@ function goToPrevious(){
     state.sessionIndex -= 1;
     state.qIndex = currentSession().questions.length - 1;
   } else {
+    // Soal pertama: kembali ke beranda tanpa mengubah jawaban/skor.
+    showScreen('home');
     return;
   }
   renderQuestion();
