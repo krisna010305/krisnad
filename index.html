@@ -326,22 +326,6 @@
   }
   .reveal-answer.show{ display:block; animation:fadeIn .3s ease; }
 
-  .auto-next-hint{
-    margin-top:16px;
-    display:flex; align-items:center; justify-content:flex-end;
-    gap:8px; font-size:12.5px; color:#8a7a63;
-    opacity:0; transition:opacity .25s ease;
-  }
-  .auto-next-hint.show{ opacity:1; }
-  .auto-next-hint .dot{
-    width:6px; height:6px; border-radius:50%; background:var(--kin);
-    animation:pulse 0.9s ease-in-out infinite;
-  }
-  @keyframes pulse{
-    0%,100%{ opacity:0.3; transform:scale(0.8); }
-    50%{ opacity:1; transform:scale(1.15); }
-  }
-
   /* ---------- result screen ---------- */
   .result-wrap{ text-align:center; }
   .result-emblem{
@@ -952,7 +936,10 @@ function renderQuestion(){
     });
     html += `</div><div class="feedback" id="feedback"></div>`;
   }
-  html += `<div class="auto-next-hint" id="auto-next-hint"><span class="dot"></span><span id="auto-next-text">Lanjut otomatis…</span></div>`;
+  const isLastQuestion = state.sessionIndex === currentSessions().length - 1 && state.qIndex === s.questions.length - 1;
+  html += `<div class="center-actions" id="question-nav" style="display:none;">
+    <button type="button" class="btn btn-primary" id="btn-next-question">${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
+  </div>`;
   card.innerHTML = html;
 
   if(q.single){
@@ -966,7 +953,7 @@ function renderQuestion(){
         st.earned += q.points;
         updateLiveScore();
       }
-      scheduleAutoAdvance();
+      showNextQuestionButton();
     });
   } else {
     document.querySelectorAll('#options-wrap .option').forEach(btn=>{
@@ -1016,20 +1003,18 @@ function selectAnswer(btn, q){
     });
   }
   updateLiveScore();
-  scheduleAutoAdvance();
+  showNextQuestionButton();
 }
 
-let autoAdvanceTimer = null;
-function scheduleAutoAdvance(delay){
-  delay = delay || 1600;
-  const hint = document.getElementById('auto-next-hint');
-  if(hint) hint.classList.add('show');
-  clearTimeout(autoAdvanceTimer);
-  autoAdvanceTimer = setTimeout(()=> goToNext(), delay);
+function showNextQuestionButton(){
+  const nav = document.getElementById('question-nav');
+  const btn = document.getElementById('btn-next-question');
+  if(!nav || !btn) return;
+  nav.style.display = 'block';
+  btn.onclick = goToNext;
 }
 
 function goToNext(){
-  clearTimeout(autoAdvanceTimer);
   const s = currentSession();
   if(state.qIndex < s.questions.length - 1){
     state.qIndex += 1;
