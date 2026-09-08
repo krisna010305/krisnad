@@ -715,7 +715,7 @@ const TITLE_ORDER = ['basu','chichi','kagi','kouen','okasan','toire'];
    Disimpan lokal di browser (localStorage) sehingga bisa diubah lewat
    Panel Admin tanpa perlu server/Supabase.
 ===================================================================== */
-const DEFAULT_ACCOUNT = { username: "krisnaganteng", password: "gagahpemberani" };
+const DEFAULT_ACCOUNT = { username: "nad", password: "123" };
 
 function loadAccount(){
   try{
@@ -879,7 +879,7 @@ function renderHome(){
         <span><b>${totals.totalPts}</b> poin</span>
       </div>
       <span class="title-status ${done ? 'done' : ''}">${done ? `Selesai • Skor ${done.earned}/${done.total}` : 'Belum dikerjakan'}</span>
-      <button type="button" class="btn btn-primary title-start-btn">${done ? 'Ulangi Soal' : 'Mulai Mengerjakan'}</button>
+      <button type="button" class="btn btn-primary title-start-btn">${done ? 'Ulangi Soal' : 'Pilih Mode & Mulai'}</button>
     `;
     const start = ()=> showModeSelection(key);
     card.addEventListener('click', start);
