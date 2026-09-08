@@ -906,6 +906,7 @@ function currentQuestionRef(){return state.questionOrder[state.qIndex]}
 function currentQuestion(){const r=currentQuestionRef();return TITLES[r.titleKey].sessions[r.sessionIndex].questions[r.qIndex]}
 function questionKey(){const r=currentQuestionRef();return `${r.titleKey}:${r.sessionIndex}:${r.qIndex}`}
 function currentQuestionSessionIndex(){return currentQuestionRef().groupIndex||0}
+function currentScoreGroupIndex(){return currentQuestionRef().groupIndex||0}
 function currentSourceSession(){const r=currentQuestionRef();return TITLES[r.titleKey].sessions[r.sessionIndex]}
 function isCombinedMode(){return ['latihan3','ujian1','ujian2'].includes(state.mode)}
 function resultLabel(){return isCombinedMode()?MODE_INFO[state.mode].no+' — '+MODE_INFO[state.mode].title:TITLES[state.titleKey].label+' — '+MODE_INFO[state.mode].no}
@@ -1047,7 +1048,7 @@ function renderQuestion(){
       if(!state.answered){
         state.answered = true;
         state.answers[questionKey()] = { single: true, correct: true };
-        const st = state.perSession[currentQuestionSessionIndex()];
+        const st = state.perSession[currentScoreGroupIndex()];
         st.correct += 1;
         st.earned += q.points;
         updateLiveScore();
@@ -1067,7 +1068,7 @@ function selectAnswer(btn, q){
   const chosen = btn.getAttribute('data-label');
   const hasKey = !!q.correct;
   const isCorrect = hasKey && chosen === q.correct;
-  const st = state.perSession[currentQuestionSessionIndex()];
+  const st = state.perSession[currentScoreGroupIndex()];
   state.answers[questionKey()] = { chosen, correct: isCorrect };
 
   document.querySelectorAll('#options-wrap .option').forEach(o=>{
