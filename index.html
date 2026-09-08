@@ -446,6 +446,9 @@
   }
 
 
+  /* ---------- mode selection ---------- */
+  .mode-wrap{max-width:980px;margin:0 auto}.mode-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.mode-card{background:var(--washi-deep);border:1px solid var(--paper-line);border-radius:10px;padding:20px;text-align:left;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.mode-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(33,25,20,.12);border-color:var(--kin)}.mode-card .mode-no{font-size:12px;font-weight:800;color:var(--shu);letter-spacing:.08em}.mode-card h3{margin:6px 0 7px;font-size:18px}.mode-card p{margin:0;color:#665a4b;font-size:13px;line-height:1.55}.mode-card .mode-rule{margin-top:11px;padding-top:10px;border-top:1px dashed var(--paper-line);font-size:12px;color:#7b6c5a}@media (max-width:700px){.mode-grid{grid-template-columns:1fr}.mode-head{flex-direction:column}}
+
   /* ---------- title selection (judul soal) ---------- */
   .title-grid{
     display:grid;
@@ -611,6 +614,17 @@
   <!-- SCREEN: HOME (Pilih Judul Soal) -->
   <section id="screen-home" class="screen">
     <div class="title-grid" id="title-grid"></div>
+  </section>
+
+  <!-- SCREEN: MODE SELECTION -->
+  <section id="screen-mode" class="screen">
+    <div class="mode-wrap">
+      <div class="mode-head">
+        <button type="button" class="btn btn-ghost" id="btn-mode-back">← Kembali</button>
+        <div><p class="session-tag" id="mode-package-label">Pilih Mode</p><h2 style="margin:6px 0 4px;">Pilih Mode Pengerjaan</h2><p class="session-sub-label" id="mode-package-sub">Tentukan cara soal akan ditampilkan.</p></div>
+      </div>
+      <div class="mode-grid" id="mode-grid"></div>
+    </div>
   </section>
 
   <!-- SCREEN: QUIZ -->
@@ -867,62 +881,35 @@ function renderHome(){
       <span class="title-status ${done ? 'done' : ''}">${done ? `Selesai • Skor ${done.earned}/${done.total}` : 'Belum dikerjakan'}</span>
       <button type="button" class="btn btn-primary title-start-btn">${done ? 'Ulangi Soal' : 'Mulai Mengerjakan'}</button>
     `;
-    const start = ()=> startTitle(key);
+    const start = ()=> showModeSelection(key);
     card.addEventListener('click', start);
     card.addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
     grid.appendChild(card);
   });
 }
 
-/* ---------- quiz flow ---------- */
-let state = {
-  titleKey: null,
-  sessionIndex: 0,
-  qIndex: 0,
-  answered: false,
-  perSession: [],
-  answers: {},
-  optionOrders: {},
-  questionOrder: []
+/* ---------- quiz flow ----------
+const MODE_INFO={
+ latihan1:{no:'LATIHAN 1',title:'Urutan Asli',desc:'Satu paket saja. Soal dan pilihan jawaban tampil persis seperti urutan aslinya.',rule:'Tidak ada pengacakan.'},
+ latihan2:{no:'LATIHAN 2',title:'Acak Paket',desc:'Satu paket saja. Urutan soal dan pilihan jawaban diacak.',rule:'Sama seperti sistem random yang sudah ada.'},
+ latihan3:{no:'LATIHAN 3',title:'Gabungan 6 Paket',desc:'BASU, CHICHI, KOUEN, KAGI, OKASAN, dan TOIRE digabung menjadi satu bank soal lalu diacak.',rule:'Semua 332 soal menjadi satu pool.'},
+ ujian1:{no:'UJIAN 1',title:'Gabungan per Sesi',desc:'Sesi 1 dari semua paket digabung dan diacak, lalu Sesi 2, 3, dan 4 dengan pola yang sama.',rule:'Urutan sesi tetap 1 → 2 → 3 → 4.'},
+ ujian2:{no:'UJIAN 2',title:'Ujian Total Acak',desc:'Semua soal dari 6 paket dan seluruh sesi digabung menjadi satu pool lalu diacak penuh.',rule:'Semua 332 soal bebas tercampur.'}
 };
-
-function currentTitle(){ return TITLES[state.titleKey]; }
-function currentSessions(){ return currentTitle().sessions; }
-function currentSession(){ return currentSessions()[state.sessionIndex]; }
-function buildQuestionOrder(){
-  const order = [];
-  currentSessions().forEach((session, sessionIndex)=>{
-    session.questions.forEach((_, qIndex)=> order.push({sessionIndex, qIndex}));
-  });
-  for(let i = order.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  return order;
-}
-function currentQuestionRef(){ return state.questionOrder[state.qIndex]; }
-function currentQuestion(){
-  const ref = currentQuestionRef();
-  return currentSessions()[ref.sessionIndex].questions[ref.qIndex];
-}
-function questionKey(){
-  const ref = currentQuestionRef();
-  return `${ref.sessionIndex}:${ref.qIndex}`;
-}
-function currentQuestionSessionIndex(){ return currentQuestionRef().sessionIndex; }
-
-
-function startTitle(titleKey){
-  state.titleKey = titleKey;
-  state.sessionIndex = 0;
-  state.qIndex = 0;
-  state.questionOrder = buildQuestionOrder();
-  state.perSession = currentSessions().map(()=>({correct:0, wrong:0, earned:0, wrongItems:[]}));
-  state.answers = {};
-  state.optionOrders = {};
-  showScreen('screen-quiz');
-  renderQuestion();
-}
+let state={titleKey:null,mode:'latihan2',sessionIndex:0,qIndex:0,answered:false,perSession:[],answers:{},optionOrders:{},questionOrder:[],lastResult:null};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function showModeSelection(titleKey){state.titleKey=titleKey;const t=TITLES[titleKey];document.getElementById('mode-package-label').textContent=t.label;document.getElementById('mode-package-sub').textContent='Latihan 1–2 memakai paket ini. Latihan 3 dan Ujian memakai semua 6 paket.';const g=document.getElementById('mode-grid');g.innerHTML=Object.entries(MODE_INFO).map(([k,m])=>`<button type="button" class="mode-card" data-mode="${k}"><div class="mode-no">${m.no}</div><h3>${m.title}</h3><p>${m.desc}</p><div class="mode-rule">${m.rule}</div></button>`).join('');g.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>startTitle(state.titleKey,b.dataset.mode)));showScreen('screen-mode')}
+function buildQuestionOrder(){const order=[],add=(tk,si,gi)=>TITLES[tk].sessions[si].questions.forEach((_,qi)=>order.push({titleKey:tk,sessionIndex:si,qIndex:qi,groupIndex:gi}));if(state.mode==='latihan1'||state.mode==='latihan2'){TITLES[state.titleKey].sessions.forEach((_,si)=>add(state.titleKey,si,si));if(state.mode==='latihan2')shuffle(order)}else if(state.mode==='latihan3'||state.mode==='ujian2'){TITLE_ORDER.forEach(tk=>TITLES[tk].sessions.forEach((_,si)=>add(tk,si,0)));shuffle(order)}else{for(let si=0;si<4;si++){const g=[];TITLE_ORDER.forEach(tk=>TITLES[tk].sessions[si].questions.forEach((_,qi)=>g.push({titleKey:tk,sessionIndex:si,qIndex:qi,groupIndex:si})));shuffle(g);order.push(...g)}}return order}
+function buildActiveGroups(){const n=state.mode==='ujian1'?4:(state.mode==='latihan1'||state.mode==='latihan2'?4:1);return Array.from({length:n},()=>({correct:0,wrong:0,earned:0,wrongItems:[]}))}
+function currentTitle(){return TITLES[state.titleKey]}
+function currentQuestionRef(){return state.questionOrder[state.qIndex]}
+function currentQuestion(){const r=currentQuestionRef();return TITLES[r.titleKey].sessions[r.sessionIndex].questions[r.qIndex]}
+function questionKey(){const r=currentQuestionRef();return `${r.titleKey}:${r.sessionIndex}:${r.qIndex}`}
+function currentQuestionSessionIndex(){return currentQuestionRef().groupIndex||0}
+function currentSourceSession(){const r=currentQuestionRef();return TITLES[r.titleKey].sessions[r.sessionIndex]}
+function isCombinedMode(){return ['latihan3','ujian1','ujian2'].includes(state.mode)}
+function resultLabel(){return isCombinedMode()?MODE_INFO[state.mode].no+' — '+MODE_INFO[state.mode].title:TITLES[state.titleKey].label+' — '+MODE_INFO[state.mode].no}
+function startTitle(titleKey,mode=state.mode){state.titleKey=titleKey;state.mode=mode;state.sessionIndex=0;state.qIndex=0;state.questionOrder=buildQuestionOrder();state.perSession=buildActiveGroups();state.answers={};state.optionOrders={};state.lastResult=null;showScreen('screen-quiz');renderQuestion()}
 
 function overallProgress(){
   return {
@@ -965,7 +952,7 @@ function renderQuestionPalette(){
   let html = `<div class="question-jump"><div class="question-jump-title">Nomor soal — klik untuk langsung menuju soal</div><div class="question-grid">`;
   for(let i=0;i<total;i++){
     const ref = state.questionOrder[i];
-    const key = `${ref.sessionIndex}:${ref.qIndex}`;
+    const key = `${ref.titleKey}:${ref.sessionIndex}:${ref.qIndex}`;
     const ans = state.answers[key];
     let cls = i === state.qIndex ? 'current' : '';
     if(ans){
@@ -981,13 +968,12 @@ function renderQuestionPalette(){
 function renderQuestion(){
   const savedAnswer = state.answers[questionKey()];
   state.answered = !!savedAnswer;
-  const t = currentTitle();
-  const ref = currentQuestionRef();
-  const s = currentSessions()[ref.sessionIndex];
-  const q = currentQuestion();
-
-  document.getElementById('quiz-session-title').textContent = `${t.label} — Soal ${state.qIndex+1}/${state.questionOrder.length}`;
-  document.getElementById('quiz-session-sub').textContent = `${s.title} • Sesi asal ${ref.sessionIndex+1}`;
+  const ref=currentQuestionRef();
+  const q=currentQuestion();
+  const sourceTitle=TITLES[ref.titleKey];
+  const s=sourceTitle.sessions[ref.sessionIndex];
+  document.getElementById('quiz-session-title').textContent=`${isCombinedMode()?MODE_INFO[state.mode].no:sourceTitle.label} — Soal ${state.qIndex+1}/${state.questionOrder.length}`;
+  document.getElementById('quiz-session-sub').textContent=`${sourceTitle.label} • ${s.title} • Sesi asal ${ref.sessionIndex+1}`;
   updateLiveScore();
 
   const prog = overallProgress();
@@ -1013,14 +999,7 @@ function renderQuestion(){
   } else {
     html += `<div class="options" id="options-wrap">`;
     const qKey = questionKey();
-    if(!state.optionOrders[qKey]){
-      state.optionOrders[qKey] = [...q.options];
-      for(let i = state.optionOrders[qKey].length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [state.optionOrders[qKey][i], state.optionOrders[qKey][j]] =
-          [state.optionOrders[qKey][j], state.optionOrders[qKey][i]];
-      }
-    }
+    if(!state.optionOrders[qKey]){state.optionOrders[qKey]=[...q.options];if(state.mode!=='latihan1')shuffle(state.optionOrders[qKey]);}
     state.optionOrders[qKey].forEach(opt=>{
       const selected = savedAnswer && savedAnswer.chosen === opt.l;
       const cls = selected ? (q.correct && opt.l === q.correct ? 'option locked correct' : 'option locked wrong') : 'option';
@@ -1114,7 +1093,7 @@ function selectAnswer(btn, q){
     st.wrong += 1;
     const chosenOpt = q.options.find(o=>o.l===chosen);
     st.wrongItems.push({
-      sessionTitle: currentSessions()[currentQuestionSessionIndex()].title,
+      sessionTitle: `${TITLES[currentQuestionRef().titleKey].label} — ${currentSourceSession().title}`,
       num: q.num,
       prompt: q.prompt,
       chosen: chosen || '-',
@@ -1164,86 +1143,11 @@ function goToNext(){
 }
 
 /* ---------- result ---------- */
-function finishTitle(){
-  const totals = computeTitleTotals(state.titleKey);
-  let correct = 0, wrong = 0, earned = 0, wrongItems = [];
-  state.perSession.forEach(p=>{
-    correct += p.correct;
-    wrong += p.wrong;
-    earned += p.earned;
-    wrongItems = wrongItems.concat(p.wrongItems);
-  });
-  const answered = Object.keys(state.answers).length;
-  completedTitles[state.titleKey] = { earned, total: totals.totalPts, correct, wrong, answered, wrongItems };
-  saveCompleted();
-  renderResult();
-  showScreen('screen-result');
-}
+function finishTitle(){const totalPts=state.questionOrder.reduce((a,r)=>a+TITLES[r.titleKey].sessions[r.sessionIndex].questions[r.qIndex].points,0);let correct=0,wrong=0,earned=0,wrongItems=[];state.perSession.forEach(p=>{correct+=p.correct;wrong+=p.wrong;earned+=p.earned;wrongItems=wrongItems.concat(p.wrongItems)});const answered=Object.keys(state.answers).length;const data={earned,total:totalPts,correct,wrong,answered,wrongItems};state.lastResult={...data,label:resultLabel(),totalQ:state.questionOrder.length,mode:state.mode,titleKey:state.titleKey};if(!isCombinedMode()){completedTitles[state.titleKey]={...data};saveCompleted()}renderResult();showScreen('screen-result')}
+function renderResult(){const d=state.lastResult,pct=d.total?Math.round(d.earned/d.total*100):0,unanswered=Math.max(0,d.totalQ-d.answered);const wrongHtml=d.wrongItems.length?`<div class="wrong-list"><h3>Soal yang Salah (${d.wrongItems.length})</h3>`+d.wrongItems.map(w=>`<div class="wrong-item"><div class="wrong-item-head">${escapeHtml(w.sessionTitle)} — 問${w.num}</div><div class="wrong-item-prompt">${escapeHtml(w.prompt)}</div><div class="wrong-item-answer">Jawabanmu: <b>${escapeHtml(w.chosen)}. ${escapeHtml(w.chosenText)}</b> — Jawaban benar: <b>${escapeHtml(w.correct)}. ${escapeHtml(w.correctText)}</b></div></div>`).join('')+`</div>`:`<p class="wrong-empty">🎉 Semua jawaban benar! Sugoi!</p>`;document.getElementById('result-content').innerHTML=`<div class="result-emblem">${escapeHtml(d.label)}</div><p class="result-score">${d.earned}<span> / ${d.total} poin</span></p><p class="result-label">${escapeHtml(d.label)} — ${d.totalQ} Soal</p><div class="result-stats"><div class="rstat g"><div class="n">${d.correct}</div><div class="l">Benar</div></div><div class="rstat b"><div class="n">${d.wrong}</div><div class="l">Salah</div></div><div class="rstat"><div class="n">${pct}%</div><div class="l">Skor</div></div></div><div class="result-detail-grid"><div class="result-detail"><div class="n">${d.answered}</div><div class="l">Terjawab</div></div><div class="result-detail"><div class="n">${unanswered}</div><div class="l">Belum dijawab</div></div><div class="result-detail"><div class="n">${d.totalQ}</div><div class="l">Total soal</div></div><div class="result-detail"><div class="n">${d.earned}/${d.total}</div><div class="l">Poin</div></div></div><div class="divider-brush"></div>${wrongHtml}<div class="center-actions"><button type="button" class="btn btn-ghost" id="btn-retry">${isCombinedMode()?'Ulangi Mode':'Ulangi '+escapeHtml(TITLES[state.titleKey].label)}</button><button type="button" class="btn btn-ghost" id="btn-home">Kembali ke Beranda</button></div>`;document.getElementById('btn-retry').addEventListener('click',()=>startTitle(state.titleKey,state.mode));document.getElementById('btn-home').addEventListener('click',()=>{showScreen('screen-home');renderHome()})}
 
-function findNextIncompleteTitle(excludeKey){
-  for(const key of TITLE_ORDER){
-    if(key === excludeKey) continue;
-    if(!completedTitles[key]) return key;
-  }
-  return null;
-}
 
-function renderResult(){
-  const t = currentTitle();
-  const data = completedTitles[state.titleKey];
-  const totalQ = currentSessions().reduce((a,s)=>a+s.questions.length,0);
-  const pct = data.total > 0 ? Math.round((data.earned/data.total)*100) : 0;
-  const unanswered = Math.max(0, totalQ - (data.answered ?? (data.correct + data.wrong)));
-
-  let wrongHtml;
-  if(data.wrongItems.length){
-    wrongHtml = `<div class="wrong-list"><h3>Soal yang Salah (${data.wrongItems.length})</h3>` +
-      data.wrongItems.map(w => `
-        <div class="wrong-item">
-          <div class="wrong-item-head">${escapeHtml(w.sessionTitle)} — 問${w.num}</div>
-          <div class="wrong-item-prompt">${escapeHtml(w.prompt)}</div>
-          <div class="wrong-item-answer">Jawabanmu: <b>${escapeHtml(w.chosen)}. ${escapeHtml(w.chosenText)}</b> — Jawaban benar: <b>${escapeHtml(w.correct)}. ${escapeHtml(w.correctText)}</b></div>
-        </div>`).join('') +
-      `</div>`;
-  } else {
-    wrongHtml = `<p class="wrong-empty">🎉 Semua jawaban benar! Sugoi!</p>`;
-  }
-
-  const nextKey = findNextIncompleteTitle(state.titleKey);
-  let btnsHtml = `
-    <button type="button" class="btn btn-ghost" id="btn-retry">Ulangi ${escapeHtml(t.label)}</button>
-    <button type="button" class="btn btn-ghost" id="btn-home">Kembali ke Beranda</button>
-  `;
-  if(nextKey){
-    btnsHtml += `<button type="button" class="btn btn-primary" id="btn-next-title">Lanjut ke ${escapeHtml(TITLES[nextKey].label)} →</button>`;
-  }
-
-  document.getElementById('result-content').innerHTML = `
-    <div class="result-emblem">${escapeHtml(t.label)}</div>
-    <p class="result-score">${data.earned}<span> / ${data.total} poin</span></p>
-    <p class="result-label">Hasil ${escapeHtml(t.label)} — ${totalQ} Soal</p>
-    <div class="result-stats">
-      <div class="rstat g"><div class="n">${data.correct}</div><div class="l">Benar</div></div>
-      <div class="rstat b"><div class="n">${data.wrong}</div><div class="l">Salah</div></div>
-      <div class="rstat"><div class="n">${pct}%</div><div class="l">Skor</div></div>
-    </div>
-    <div class="result-detail-grid">
-      <div class="result-detail"><div class="n">${data.answered ?? (data.correct + data.wrong)}</div><div class="l">Terjawab</div></div>
-      <div class="result-detail"><div class="n">${unanswered}</div><div class="l">Belum dijawab</div></div>
-      <div class="result-detail"><div class="n">${totalQ}</div><div class="l">Total soal</div></div>
-      <div class="result-detail"><div class="n">${data.earned}/${data.total}</div><div class="l">Poin</div></div>
-    </div>
-    <div class="divider-brush"></div>
-    ${wrongHtml}
-    <div class="center-actions">${btnsHtml}</div>
-  `;
-
-  document.getElementById('btn-retry').addEventListener('click', ()=> startTitle(state.titleKey));
-  document.getElementById('btn-home').addEventListener('click', ()=>{ showScreen('screen-home'); renderHome(); });
-  const nb = document.getElementById('btn-next-title');
-  if(nb) nb.addEventListener('click', ()=> startTitle(nextKey));
-}
-
+document.getElementById('btn-mode-back').addEventListener('click',()=>{showScreen('screen-home');renderHome()});
 /* ---------- boot ---------- */
 loadSession();
 updateUserBar();
