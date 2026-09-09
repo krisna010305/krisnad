@@ -455,6 +455,38 @@
     .petal, .screen.active, .feedback.show, .reveal-answer.show{ animation:none !important; }
   }
 
+  /* ---------- FITUR MODE: mulai ---------- */
+  /* ---------- mode selection ---------- */
+  .mode-panel{margin:0 0 22px;padding:16px;background:rgba(255,255,255,.72);border:1px solid var(--paper-line);border-radius:8px}
+  .mode-panel-title{font-family:"Shippori Mincho",serif;font-weight:700;font-size:18px;text-align:center;margin:0 0 12px;color:var(--ai)}
+  .mode-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .mode-btn{border:1.5px solid var(--paper-line);background:#fff;border-radius:6px;padding:10px 6px;cursor:pointer;font-weight:700;font-size:12px;color:var(--sumi)}
+  .mode-btn:hover{border-color:var(--ai);transform:translateY(-1px)} .mode-btn.active{background:var(--ai);color:#fff;border-color:var(--ai)}
+  .mode-desc{text-align:center;font-size:12px;color:#6b5c48;margin:10px 0 0;min-height:18px}
+  @media(max-width:560px){.mode-grid{grid-template-columns:repeat(2,1fr)}.mode-btn:last-child{grid-column:1/-1}}
+
+  /* ---------- quiz UX (navigasi & palet nomor soal utk mode) ---------- */
+  .quiz-progress-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 10px;font-size:12.5px;color:#6b5c48}
+  .quiz-progress-meta strong{color:var(--ai)}
+  .question-jump{margin:18px 0 6px;padding:14px;background:rgba(255,255,255,.72);border:1px solid var(--paper-line);border-radius:8px}
+  .question-jump-title{font-size:12px;font-weight:700;color:#6b5c48;margin-bottom:10px;text-align:center}
+  .question-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+  .question-grid button{border:1px solid var(--paper-line);background:#fff;padding:7px 4px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;color:var(--sumi);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+  .question-grid button:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(33,25,20,.12)}
+  .question-grid button.current{background:var(--ai);color:#fff;border-color:var(--ai)}
+  .question-grid button.answered{background:rgba(92,122,82,.16);color:#3d5636;border-color:rgba(92,122,82,.35)}
+  .question-grid button.current.answered{background:var(--ai);color:#fff}
+  .question-grid button.unanswered{background:#fff}
+  .question-grid button.wrong-mark{background:rgba(170,65,65,.12);color:var(--shu-deep);border-color:rgba(170,65,65,.3)}
+  .question-grid button.current.wrong-mark{background:var(--shu);color:#fff}
+  .question-grid button:focus-visible{outline:3px solid var(--kin);outline-offset:2px}
+  .result-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+  .result-detail{background:#fff;border:1px solid var(--paper-line);border-radius:7px;padding:10px 6px;text-align:center}
+  .result-detail .n{font-size:20px;font-weight:800;color:var(--ai)}
+  .result-detail .l{font-size:11px;color:#7b6b58;margin-top:3px}
+  @media(max-width:560px){.result-detail-grid{grid-template-columns:repeat(2,1fr)}.question-grid{grid-template-columns:repeat(6,1fr)}}
+  /* ---------- FITUR MODE: selesai ---------- */
+
 
   /* ---------- title selection (judul soal) ---------- */
   .title-grid{
@@ -588,6 +620,13 @@
 
   <!-- SCREEN: HOME (Pilih Judul Soal) -->
   <section id="screen-home" class="screen">
+    <!-- FITUR MODE: mulai -->
+    <div class="mode-panel">
+      <p class="mode-panel-title">🎯 Pilih Mode</p>
+      <div class="mode-grid" id="mode-grid"></div>
+      <p class="mode-desc" id="mode-desc"></p>
+    </div>
+    <!-- FITUR MODE: selesai -->
     <div class="title-grid" id="title-grid"></div>
   </section>
 
@@ -827,6 +866,24 @@ function computeTitleTotals(titleKey){
 }
 
 function renderHome(){
+  /* FITUR MODE: render panel pilih mode */
+  const modeGrid = document.getElementById('mode-grid');
+  const modeDesc = document.getElementById('mode-desc');
+  if(modeGrid){
+    modeGrid.innerHTML = Object.entries(MODE_INFO).map(([k,m])=>
+      `<button type="button" class="mode-btn ${selectedMode===k?'active':''}" data-mode="${k}">${m.label}</button>`
+    ).join('');
+    modeGrid.querySelectorAll('[data-mode]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        selectedMode = b.dataset.mode;
+        modeGrid.querySelectorAll('.mode-btn').forEach(x=>x.classList.toggle('active', x===b));
+        modeDesc.textContent = MODE_INFO[selectedMode].desc;
+      });
+    });
+  }
+  if(modeDesc) modeDesc.textContent = MODE_INFO[selectedMode].desc;
+  /* /FITUR MODE */
+
   const grid = document.getElementById('title-grid');
   grid.innerHTML = '';
   TITLE_ORDER.forEach(key=>{
@@ -855,37 +912,96 @@ function renderHome(){
 }
 
 /* ---------- quiz flow ---------- */
+/* FITUR MODE: definisi 5 mode + fungsi bantu penyusun urutan soal.
+   PENTING: semua mode HANYA menyusun ULANG REFERENSI ke soal yang sudah ada
+   ({titleKey, sessionIndex, qIndex}) -- bukan menyalin/mengubah data soal.
+   Jadi teks soal, gambar, pilihan, dan kunci jawaban tetap 100% sama seperti
+   aslinya, tidak akan tertukar walau urutan tampilnya diacak. */
+const MODE_INFO = {
+  latihan1: { label:'LATIHAN 1', desc:'Urutan asli — soal dan pilihan jawaban tidak diacak.' },
+  latihan2: { label:'LATIHAN 2', desc:'Acak paket — soal dan pilihan jawaban diacak.' },
+  latihan3: { label:'LATIHAN 3', desc:'Gabungan 6 paket — semua soal digabung lalu diacak.' },
+  ujian1:   { label:'UJIAN 1',   desc:'Gabungan per sesi — Sesi 1→2→3→4, tiap sesi berisi 6 paket.' },
+  ujian2:   { label:'UJIAN 2',   desc:'Ujian total — semua soal dari 6 paket diacak penuh.' }
+};
+let selectedMode = 'latihan1';
+
 let state = {
   titleKey: null,
   sessionIndex: 0,
   qIndex: 0,
   answered: false,
-  perSession: []
+  perSession: [],
+  answers: {},
+  optionOrders: {},
+  questionOrder: [],
+  mode: 'latihan1',
+  lastResult: null
 };
 
 function currentTitle(){ return TITLES[state.titleKey]; }
 function currentSessions(){ return currentTitle().sessions; }
-function currentSession(){ return currentSessions()[state.sessionIndex]; }
-function currentQuestion(){ return currentSession().questions[state.qIndex]; }
+function allQuestionRefs(){
+  const out = [];
+  TITLE_ORDER.forEach(k => TITLES[k].sessions.forEach((se,si) => se.questions.forEach((_,qi) => out.push({titleKey:k, sessionIndex:si, qIndex:qi}))));
+  return out;
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function buildQuestionOrder(){
+  const m = state.mode;
+  if(m==='latihan3' || m==='ujian2') return shuffle(allQuestionRefs());
+  if(m==='ujian1'){
+    const order = [];
+    for(let si=0; si<4; si++){
+      const group = [];
+      TITLE_ORDER.forEach(k=>{
+        const se = TITLES[k].sessions[si];
+        if(se) se.questions.forEach((_,qi)=> group.push({titleKey:k, sessionIndex:si, qIndex:qi}));
+      });
+      order.push(...shuffle(group));
+    }
+    return order;
+  }
+  const order = [];
+  const k = state.titleKey;
+  TITLES[k].sessions.forEach((se,si)=> se.questions.forEach((_,qi)=> order.push({titleKey:k, sessionIndex:si, qIndex:qi})));
+  return m==='latihan2' ? shuffle(order) : order;
+}
+function currentQuestionRef(){ return state.questionOrder[state.qIndex]; }
+function currentQuestion(){
+  const r = currentQuestionRef();
+  return TITLES[r.titleKey].sessions[r.sessionIndex].questions[r.qIndex];
+}
+function questionKey(){
+  const r = currentQuestionRef();
+  return `${r.titleKey}:${r.sessionIndex}:${r.qIndex}`;
+}
+function currentQuestionSessionIndex(){ return currentQuestionRef().sessionIndex; }
+function currentScoreGroupIndex(){ return state.mode==='ujian1' ? currentQuestionSessionIndex() : 0; }
+function isCombinedMode(){ return state.mode==='latihan3' || state.mode==='ujian2' || state.mode==='ujian1'; }
+/* /FITUR MODE */
 
 function startTitle(titleKey){
   state.titleKey = titleKey;
+  state.mode = selectedMode; /* FITUR MODE */
   state.sessionIndex = 0;
   state.qIndex = 0;
-  state.perSession = currentSessions().map(()=>({correct:0, wrong:0, earned:0, wrongItems:[]}));
+  state.questionOrder = buildQuestionOrder(); /* FITUR MODE */
+  state.perSession = Array.from({length: state.mode==='ujian1' ? 4 : 1}, ()=>({correct:0, wrong:0, earned:0, wrongItems:[]}));
+  state.answers = {}; /* FITUR MODE: simpan jawaban per soal supaya bisa navigasi maju-mundur tanpa hilang */
+  state.optionOrders = {};
   showScreen('screen-quiz');
   renderQuestion();
 }
 
 function overallProgress(){
-  const sessions = currentSessions();
-  let doneCount = 0, totalCount = 0;
-  sessions.forEach((s,i)=>{
-    totalCount += s.questions.length;
-    if(i < state.sessionIndex) doneCount += s.questions.length;
-    else if(i === state.sessionIndex) doneCount += state.qIndex;
-  });
-  return { doneCount, totalCount };
+  return { doneCount: state.qIndex, totalCount: state.questionOrder.length };
 }
 
 function updateLiveScore(){
@@ -917,18 +1033,41 @@ function spawnPetals(){
 }
 spawnPetals();
 
+/* FITUR MODE: palet nomor soal (klik utk lompat ke soal manapun) */
+function renderQuestionPalette(){
+  const total = state.questionOrder.length;
+  let html = `<div class="question-jump"><div class="question-jump-title">Nomor soal — klik untuk langsung menuju soal</div><div class="question-grid">`;
+  for(let i=0;i<total;i++){
+    const ref = state.questionOrder[i];
+    const key = `${ref.titleKey}:${ref.sessionIndex}:${ref.qIndex}`;
+    const ans = state.answers[key];
+    let cls = i === state.qIndex ? 'current' : '';
+    if(ans){
+      cls += ans.correct === false ? ' wrong-mark' : ' answered';
+    } else {
+      cls += ' unanswered';
+    }
+    html += `<button type="button" class="${cls.trim()}" data-jump-index="${i}" title="Soal ${i+1}">${i+1}</button>`;
+  }
+  return html + `</div></div>`;
+}
+/* /FITUR MODE */
+
 function renderQuestion(){
-  state.answered = false;
-  const t = currentTitle();
-  const s = currentSession();
+  const savedAnswer = state.answers[questionKey()]; /* FITUR MODE */
+  state.answered = !!savedAnswer;
+  const ref = currentQuestionRef(); /* FITUR MODE */
+  const t = TITLES[ref.titleKey];
+  const s = t.sessions[ref.sessionIndex];
   const q = currentQuestion();
 
-  document.getElementById('quiz-session-title').textContent = `${t.label} — ${s.title} — Soal ${state.qIndex+1}/${s.questions.length}`;
-  document.getElementById('quiz-session-sub').textContent = `Sesi ${state.sessionIndex+1} dari ${currentSessions().length}`;
+  document.getElementById('quiz-session-title').textContent = `${t.label} — Soal ${state.qIndex+1}/${state.questionOrder.length}`;
+  document.getElementById('quiz-session-sub').textContent = `${s.title} • Sesi asal ${ref.sessionIndex+1}`;
   updateLiveScore();
 
   const prog = overallProgress();
-  const pct = prog.totalCount ? (prog.doneCount/prog.totalCount*100) : 0;
+  const answeredCount = Object.keys(state.answers).length; /* FITUR MODE */
+  const pct = prog.totalCount ? ((state.qIndex+1)/prog.totalCount*100) : 0;
   document.getElementById('progress-fill').style.width = pct+'%';
 
   const card = document.getElementById('qcard');
@@ -945,8 +1084,17 @@ function renderQuestion(){
              <div class="reveal-answer" id="reveal-answer">✅ Jawaban: <strong>${escapeHtml(q.answerText)}</strong></div>`;
   } else {
     html += `<div class="options" id="options-wrap">`;
-    q.options.forEach(opt=>{
-      html += `<button type="button" class="option" data-label="${opt.l}">
+    /* FITUR MODE: urutan pilihan diacak (kecuali LATIHAN 1), tapi label & isi tiap opsi
+       (opt.l dan opt.t) tetap dari objek soal aslinya -- tidak ada teks yang tertukar. */
+    const qKey = questionKey();
+    if(!state.optionOrders[qKey]){
+      state.optionOrders[qKey] = [...q.options];
+      if(state.mode !== 'latihan1') shuffle(state.optionOrders[qKey]);
+    }
+    state.optionOrders[qKey].forEach(opt=>{
+      const selected = savedAnswer && savedAnswer.chosen === opt.l;
+      const cls = selected ? (q.correct && opt.l === q.correct ? 'option locked correct' : 'option locked wrong') : 'option';
+      html += `<button type="button" class="${cls}" data-label="${opt.l}">
         <span class="badge">${opt.l}</span>
         <span class="opt-text">${escapeHtml(opt.t)}</span>
         ${opt.img ? `<span class="opt-img"><img src="${opt.img}" alt="Opsi ${opt.l}"></span>` : ''}
@@ -954,21 +1102,51 @@ function renderQuestion(){
     });
     html += `</div><div class="feedback" id="feedback"></div>`;
   }
-  html += `<div class="auto-next-hint" id="auto-next-hint"><span class="dot"></span><span id="auto-next-text">Lanjut otomatis…</span></div>`;
+
+  /* FITUR MODE: navigasi manual (ganti auto-next) supaya bisa lompat/mundur tanpa kehilangan jawaban */
+  const isLastQuestion = state.qIndex === state.questionOrder.length - 1;
+  const isFirstQuestion = state.qIndex === 0;
+  html += `<div class="center-actions" id="question-nav" style="display:block; gap:10px; flex-wrap:wrap;">
+    <button type="button" class="btn" id="btn-prev-question">${isFirstQuestion ? '← Kembali ke Beranda' : '← Soal Sebelumnya'}</button>
+    <button type="button" class="btn btn-primary" id="btn-next-question" ${savedAnswer ? '' : 'disabled'}>${isLastQuestion ? 'Selesai' : 'Soal Berikutnya →'}</button>
+  </div>`;
+  html += `<div class="quiz-progress-meta"><span>📖 <strong>Soal ${state.qIndex+1} / ${state.questionOrder.length}</strong></span><span>✓ Terjawab: <strong>${answeredCount}</strong> / ${state.questionOrder.length}</span></div>`;
+  html += renderQuestionPalette();
   card.innerHTML = html;
 
+  const prevBtn = document.getElementById('btn-prev-question');
+  const nextBtn = document.getElementById('btn-next-question');
+  if(prevBtn) prevBtn.addEventListener('click', function(e){ e.preventDefault(); goToPrevious(); });
+  if(nextBtn) nextBtn.addEventListener('click', function(e){ e.preventDefault(); goToNext(); });
+  document.querySelectorAll('[data-jump-index]').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      const target = Number(this.getAttribute('data-jump-index'));
+      if(Number.isInteger(target) && target >= 0 && target < state.questionOrder.length){
+        state.qIndex = target;
+        renderQuestion();
+      }
+    });
+  });
+  /* /FITUR MODE */
+
   if(q.single){
+    if(savedAnswer){
+      document.getElementById('reveal-answer').classList.add('show');
+      document.getElementById('reveal-btn').style.display = 'none';
+    }
     document.getElementById('reveal-btn').addEventListener('click', function(){
       document.getElementById('reveal-answer').classList.add('show');
       this.style.display = 'none';
       if(!state.answered){
         state.answered = true;
-        const st = state.perSession[state.sessionIndex];
+        state.answers[questionKey()] = { single: true, correct: true }; /* FITUR MODE */
+        const st = state.perSession[currentScoreGroupIndex()]; /* FITUR MODE */
         st.correct += 1;
         st.earned += q.points;
         updateLiveScore();
       }
-      scheduleAutoAdvance();
+      showNextQuestionButton();
     });
   } else {
     document.querySelectorAll('#options-wrap .option').forEach(btn=>{
@@ -983,7 +1161,8 @@ function selectAnswer(btn, q){
   const chosen = btn.getAttribute('data-label');
   const hasKey = !!q.correct;
   const isCorrect = hasKey && chosen === q.correct;
-  const st = state.perSession[state.sessionIndex];
+  const st = state.perSession[currentScoreGroupIndex()]; /* FITUR MODE */
+  state.answers[questionKey()] = { chosen, correct: isCorrect }; /* FITUR MODE */
 
   document.querySelectorAll('#options-wrap .option').forEach(o=>{
     o.classList.add('locked');
@@ -1007,8 +1186,12 @@ function selectAnswer(btn, q){
     fb.innerHTML = `💮 <span>Kurang tepat. Jawaban benar: <strong>${q.correct}. ${escapeHtml(correctOpt ? correctOpt.t : '')}</strong></span>`;
     st.wrong += 1;
     const chosenOpt = q.options.find(o=>o.l===chosen);
+    /* FITUR MODE (perbaikan): judul sesi diambil dari soal yang benar-benar sedang
+       dijawab (bisa dari paket manapun di mode gabungan), bukan dari paket yang
+       diklik pertama -- supaya daftar "Soal yang Salah" tidak salah label. */
+    const refNow = currentQuestionRef();
     st.wrongItems.push({
-      sessionTitle: currentSession().title,
+      sessionTitle: `${TITLES[refNow.titleKey].label} — ${TITLES[refNow.titleKey].sessions[refNow.sessionIndex].title}`,
       num: q.num,
       prompt: q.prompt,
       chosen: chosen || '-',
@@ -1018,48 +1201,65 @@ function selectAnswer(btn, q){
     });
   }
   updateLiveScore();
-  scheduleAutoAdvance();
+  showNextQuestionButton();
 }
 
-let autoAdvanceTimer = null;
-function scheduleAutoAdvance(delay){
-  delay = delay || 1600;
-  const hint = document.getElementById('auto-next-hint');
-  if(hint) hint.classList.add('show');
-  clearTimeout(autoAdvanceTimer);
-  autoAdvanceTimer = setTimeout(()=> goToNext(), delay);
+function showNextQuestionButton(){
+  const nav = document.getElementById('question-nav');
+  const btn = document.getElementById('btn-next-question');
+  if(!nav || !btn) return;
+  nav.style.display = 'block';
+  btn.disabled = false;
+  // Event listener tombol dipasang saat renderQuestion().
+  // Jangan pasang ulang di sini agar tidak terjadi handler ganda saat bolak-balik soal.
+}
+
+/* FITUR MODE: navigasi maju/mundur menggantikan auto-next lama */
+function goToPrevious(){
+  if(state.qIndex > 0){
+    state.qIndex -= 1;
+    renderQuestion();
+    return;
+  }
+  showScreen('screen-home');
+  renderHome();
 }
 
 function goToNext(){
-  clearTimeout(autoAdvanceTimer);
-  const s = currentSession();
-  if(state.qIndex < s.questions.length - 1){
+  if(state.qIndex < state.questionOrder.length - 1){
     state.qIndex += 1;
     renderQuestion();
     return;
   }
-  if(state.sessionIndex < currentSessions().length - 1){
-    state.sessionIndex += 1;
-    state.qIndex = 0;
-    renderQuestion();
-    return;
+  const unanswered = state.questionOrder.length - Object.keys(state.answers).length;
+  if(unanswered > 0){
+    const ok = window.confirm(`Masih ada ${unanswered} soal yang belum dijawab.\n\nApakah kamu yakin ingin menyelesaikan kuis sekarang?`);
+    if(!ok) return;
   }
   document.getElementById('progress-fill').style.width = '100%';
   finishTitle();
 }
+/* /FITUR MODE */
 
 /* ---------- result ---------- */
 function finishTitle(){
-  const totals = computeTitleTotals(state.titleKey);
-  let correct = 0, wrong = 0, earned = 0, wrongItems = [];
+  let correct=0, wrong=0, earned=0, wrongItems=[];
   state.perSession.forEach(p=>{
     correct += p.correct;
     wrong += p.wrong;
     earned += p.earned;
     wrongItems = wrongItems.concat(p.wrongItems);
   });
-  completedTitles[state.titleKey] = { earned, total: totals.totalPts, correct, wrong, wrongItems };
-  saveCompleted();
+  /* FITUR MODE: total poin dihitung dari soal yang benar-benar tampil di sesi ini
+     (bisa lintas paket), bukan dari 1 paket saja */
+  const totalQ = state.questionOrder.length;
+  const totalPts = state.questionOrder.reduce((a,r)=> a + TITLES[r.titleKey].sessions[r.sessionIndex].questions[r.qIndex].points, 0);
+  const answered = Object.keys(state.answers).length;
+  state.lastResult = { earned, total: totalPts, correct, wrong, answered, wrongItems, totalQ, mode: state.mode };
+  if(!isCombinedMode()){
+    completedTitles[state.titleKey] = { earned, total: totalPts, correct, wrong, answered, wrongItems };
+    saveCompleted();
+  }
   renderResult();
   showScreen('screen-result');
 }
@@ -1073,10 +1273,14 @@ function findNextIncompleteTitle(excludeKey){
 }
 
 function renderResult(){
-  const t = currentTitle();
-  const data = completedTitles[state.titleKey];
-  const totalQ = currentSessions().reduce((a,s)=>a+s.questions.length,0);
+  const t = TITLES[state.titleKey];
+  const data = state.lastResult; /* FITUR MODE */
+  const totalQ = data.totalQ;
   const pct = data.total > 0 ? Math.round((data.earned/data.total)*100) : 0;
+  const unanswered = Math.max(0, totalQ - (data.answered ?? (data.correct + data.wrong)));
+  /* FITUR MODE: untuk mode gabungan, label paket diganti supaya tidak membingungkan
+     (soal berasal dari 6 paket, bukan cuma paket yang diklik pertama) */
+  const displayLabel = isCombinedMode() ? 'Semua Paket (Gabungan)' : t.label;
 
   let wrongHtml;
   if(data.wrongItems.length){
@@ -1092,9 +1296,9 @@ function renderResult(){
     wrongHtml = `<p class="wrong-empty">🎉 Semua jawaban benar! Sugoi!</p>`;
   }
 
-  const nextKey = findNextIncompleteTitle(state.titleKey);
+  const nextKey = isCombinedMode() ? null : findNextIncompleteTitle(state.titleKey); /* FITUR MODE */
   let btnsHtml = `
-    <button type="button" class="btn btn-ghost" id="btn-retry">Ulangi ${escapeHtml(t.label)}</button>
+    <button type="button" class="btn btn-ghost" id="btn-retry">Ulangi ${escapeHtml(displayLabel)}</button>
     <button type="button" class="btn btn-ghost" id="btn-home">Kembali ke Beranda</button>
   `;
   if(nextKey){
@@ -1102,13 +1306,19 @@ function renderResult(){
   }
 
   document.getElementById('result-content').innerHTML = `
-    <div class="result-emblem">${escapeHtml(t.label)}</div>
+    <div class="result-emblem">${escapeHtml(displayLabel)}</div>
     <p class="result-score">${data.earned}<span> / ${data.total} poin</span></p>
-    <p class="result-label">Hasil ${escapeHtml(t.label)} — ${totalQ} Soal</p>
+    <p class="result-label">Hasil ${escapeHtml(MODE_INFO[data.mode]?.label || displayLabel)} — ${totalQ} Soal</p>
     <div class="result-stats">
       <div class="rstat g"><div class="n">${data.correct}</div><div class="l">Benar</div></div>
       <div class="rstat b"><div class="n">${data.wrong}</div><div class="l">Salah</div></div>
       <div class="rstat"><div class="n">${pct}%</div><div class="l">Skor</div></div>
+    </div>
+    <div class="result-detail-grid">
+      <div class="result-detail"><div class="n">${data.answered ?? (data.correct + data.wrong)}</div><div class="l">Terjawab</div></div>
+      <div class="result-detail"><div class="n">${unanswered}</div><div class="l">Belum dijawab</div></div>
+      <div class="result-detail"><div class="n">${totalQ}</div><div class="l">Total soal</div></div>
+      <div class="result-detail"><div class="n">${data.earned}/${data.total}</div><div class="l">Poin</div></div>
     </div>
     <div class="divider-brush"></div>
     ${wrongHtml}
